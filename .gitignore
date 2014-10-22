@@ -1,0 +1,14 @@
+virt_env
+production.ini
+alembic.ini
+digital_ale.egg-info
+digital_ale/static/scans
+
+#general stuff
+*.log
+*.bak
+*~
+
+#python specific
+__pycache__/
+*.py[cod]
