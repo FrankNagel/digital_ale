@@ -19,7 +19,9 @@ def main(global_config, **settings):
     Base.metadata.bind = engine
 
     session_factory = SignedCookieSessionFactory(
-        settings['session.secret']
+        settings['session.secret'],
+        timeout = settings.get('session.timeout', 3600),
+        reissue_time = settings.get('session.reissue_time', 360)
         )
 
     authn_policy = SessionAuthenticationPolicy()
