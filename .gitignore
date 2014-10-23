@@ -12,3 +12,5 @@ digital_ale/static/scans
 #python specific
 __pycache__/
 *.py[cod]
+build
+dist
