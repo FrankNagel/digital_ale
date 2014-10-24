@@ -1,7 +1,7 @@
 <%inherit file='base.mako' />
 <%block name="header">
   <link rel="stylesheet"
-	href="http://code.jquery.com/ui/1.10.4/themes/start/jquery-ui.css"
+	href="http://code.jquery.com/ui/1.10.4/themes/smoothness/jquery-ui.css"
 	type="text/css">
   <script type="text/javascript" src="http://code.jquery.com/jquery-2.1.1.js"></script>
   <script type="text/javascript"

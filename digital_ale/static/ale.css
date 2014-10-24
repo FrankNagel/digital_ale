@@ -13,7 +13,7 @@ a.home:visited {
 
 div.header {
     padding: 1ex;
-    background-color: #79C9EC;
+    background-color: #E9E9F0;
     
     display: -webkit-box;      /* OLD - iOS 6-, Safari 3.1-6 */
     display: -moz-box;         /* OLD - Firefox 19- (buggy but mostly works) */
@@ -35,9 +35,12 @@ div.footer {
     margin: 0px;
 }
 
+div.concept_table_wrapper {
+    width: 50ex;
+}
+
 table.concept_table td {
-    padding-left: 0.5ex;
-    padding-right: 0.5 ex;
+    padding: 0.5ex 1ex !important;
 }
 
 table.overview_table {
@@ -46,14 +49,10 @@ table.overview_table {
     border-spacing: 0px
 }
 
-table.overview_table thead {
-    background-color:#79C9EC
+table.overview_table td,th {
+    padding: 0.5ex 1ex !important;
 }
 
-table.overview_table td,th {
-    padding-left: 1ex;
-    padding-right: 1ex;
-    padding-top: 0.4ex;
-    padding-bottom: 0.4ex;
-
+.ui-widget-header {
+    background: #F0F0F0 !important;
 }

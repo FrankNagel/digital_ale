@@ -1,24 +1,39 @@
 <%inherit file='base.mako' />
+<%block name="header">
+  <link rel="stylesheet"
+        href="http://code.jquery.com/ui/1.10.4/themes/smoothness/jquery-ui.css"
+        type="text/css">
+  <link rel="stylesheet"
+        href="//cdn.datatables.net/plug-ins/380cb78f450/integration/jqueryui/dataTables.jqueryui.css"
+        type="text/css">
+
+  <script type="text/javascript" src="http://code.jquery.com/jquery-2.1.1.js"></script>
+  <script type="text/javascript" src="//cdn.datatables.net/1.10.3/js/jquery.dataTables.min.js"></script>
+  <script type="text/javascript"
+  	   src="//cdn.datatables.net/plug-ins/380cb78f450/integration/jqueryui/dataTables.jqueryui.js"></script>
+
+</%block>
+
 <h2>Overview</h2>
 <p>Please note:</p>
 <ul>
   <li>You need to create an account and log in to save any changes.</li>
   <li>Report any bugs or other issues on <a href="https://github.com/FrankNagel/digital_ale/issues">Github</a>.</li>
 </ul>
-<table class='overview_table'>
+<table class='overview_table display'>
 <thead>
   <tr>
-  <th>Concept</th>
-  <th>English</th>
-  <th>French</th>
-  <th>Scans</th>
-  <th>Unchecked</th>
-  <th>Contains @</th>
-  <th>In Progress</th>
-  <th>Problematic</th>
-  <th>OK</th>
-  <th>Ignore</th>
-  <th>Missing</th>
+    <th>Concept</th>
+    <th>English</th>
+    <th>French</th>
+    <th>Scans</th>
+    <th>Unchecked</th>
+    <th>Contains @</th>
+    <th>In Progress</th>
+    <th>Problematic</th>
+    <th>OK</th>
+    <th>Ignore</th>
+    <th>Missing</th>
   </tr>
 </thead>
 <tbody>
@@ -40,5 +55,11 @@
 </tbody>
 </table>
 
-
+<%block name="js_footer">
+<script type="text/javascript">
+  $(document).ready(function(){
+    $('.overview_table').DataTable({paging: false});
+  });
+</script>
+</%block>
 

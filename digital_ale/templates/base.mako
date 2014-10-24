@@ -24,6 +24,7 @@ ${ next.body() }
 <div class='footer'>
 <%block name="footer"/>
 </div>
+<%block name="js_footer"/>
 </body>
 </html>
 
