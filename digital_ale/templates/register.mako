@@ -11,7 +11,7 @@
 <input type="text" name="login_name" value="${ login_name }">
 </p>
 <p>
-<label for="email">Email (not used at the moement, enter a valid one anyway)</label><br>
+<label for="email">Email (not used at the moment, enter a valid one anyway)</label><br>
 <input type="text" name="email" value="${ email }">
 </p>
 <p>
