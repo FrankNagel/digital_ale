@@ -16,11 +16,11 @@
 	      width:800px; overflow:hidden; background-color:#F5F5F5; border:1px solid #000000;'>
       </canvas>
     </div>
-    <div id='ale-scan' style="position: absolute; top:0; left:0;
-			      height:1132px; width:800px; display:inline-block;
-			      background-image: url(${ '/static/scans/' + scan.get_path_to_file() });
-			      background-size: 100% auto; background-repeat:no-repeat;">
+    <div id='ale-scan' class='ale-scan'>
+        <div id='ale-scan-bg' class='ale-scan-bg' style="background-image: url(${'/static/scans/' + scan.get_path_to_file() });">
+        </div>
     </div>
+    <div class=overlay-button><input type="button" id='rotate' value='Rotate' /></div>
   </div>
   <div id="slider-vertical" style="float:left; height:1132px;
 				   display:inline-block; margin-right:10px"></div>

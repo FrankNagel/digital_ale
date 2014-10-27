@@ -292,4 +292,7 @@ $(function() {
                 $(this).get(0).selectionEnd = start + 1;
         }
     });
+    $('#rotate').click(function() {
+        $('#ale-scan-bg').toggleClass('rotated');
+    });
 });

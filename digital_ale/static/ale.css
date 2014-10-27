@@ -56,3 +56,45 @@ table.overview_table td,th {
 .ui-widget-header {
     background: #F0F0F0 !important;
 }
+
+div.overlay-button {
+    position: absolute;
+    top:10px;
+    left:10px;
+    display:inline-block;
+    transition: opacity 600ms;
+    opacity: 0.35;
+}
+
+div.overlay-button:hover {
+    opacity: 1;
+}
+
+div.ale-scan {
+    position: absolute;
+    top:0;
+    left:0;
+    height:1132px;
+    width:800px;
+    display:inline-block;
+    overflow: hidden;
+}
+
+div.ale-scan-bg {
+    position: absolute;
+    top:0;
+    left:0;
+    height:1132px;
+    width:800px;
+    display:inline-block;
+    background-size: 100% auto;
+    background-repeat:no-repeat;
+}
+
+div.rotated {
+    -webkit-transform: rotate(180deg);
+    -moz-transform: rotate(180deg);
+    -ms-transform: rotate(180deg);
+    -o-transform: rotate(180deg);
+    transform: rotate(180deg);
+}
