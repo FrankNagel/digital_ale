@@ -1,3 +1,4 @@
+<%page expression_filter="h"/>
 <%inherit file='base.mako' />
 <%block name="header">
   <link rel="stylesheet"

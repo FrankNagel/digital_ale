@@ -1,3 +1,4 @@
+<%page expression_filter="h"/>
 <!DOCTYPE html>
 <html>
 <head>

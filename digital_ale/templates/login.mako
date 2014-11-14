@@ -1,3 +1,4 @@
+<%page expression_filter="h"/>
 <%inherit file='base.mako' />
 % if failed_attempt:
 <p><font color="red">Invalid credentials, try again.</font></p>

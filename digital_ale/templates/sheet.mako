@@ -1,3 +1,4 @@
+<%page expression_filter="h"/>
 <%inherit file='base.mako' />
 <%block name="header">
   <link rel="stylesheet"
@@ -40,12 +41,8 @@
     ${ message }
 % endif
     <br>
-    <textarea id='sheet_text' name='data' style="margin-top:10px; height:66%; width:600px"
-	      spellcheck='false'>
-% if sheetEntry:
-${sheetEntry.data}
-% endif
-    </textarea>
+    <textarea id='sheet_text' name='data' style="margin-top:10px; height:66%;
+    width:600px" spellcheck='false'></textarea>
     <p>Comment<br>
     <textarea id='sheet_comment' name='comment' style="margin-top:10px; height:20ex; width:600px"
 	      spellcheck='false'>
@@ -56,3 +53,17 @@ ${sheetEntry.comment}
     </p>
   </div>
 </form>
+<%block name="js_footer">
+<%
+if sheetEntry:
+    innerHtml = sheetEntry.js_escaped_data()
+else:
+    innerHtml = ''
+%>
+<script type="text/javascript">
+  $(document).ready(function(){
+    document.getElementById('sheet_text').innerHTML = '${ innerHtml | n }';
+    refresh_canvas();
+  });
+</script>
+</%block>

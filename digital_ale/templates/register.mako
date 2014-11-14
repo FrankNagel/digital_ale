@@ -1,3 +1,4 @@
+<%page expression_filter="h"/>
 <%inherit file='base.mako' />
 % if success_msg:
 <p style='color: green'>${ success_msg }</p>

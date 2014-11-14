@@ -269,7 +269,6 @@ $(function() {
     document.getElementById('ale-scan').style.height = (100 - $("#slider-vertical").slider("value"))+'%';
     
     $("#refresh").click(refresh_canvas);
-    refresh_canvas();
 
     $('#canvas').draggable();
 

@@ -1,3 +1,4 @@
+<%page expression_filter="h"/>
 <%inherit file='base.mako' />
 % if user:
 <p>You are logged in as: ${ user.login }</p>

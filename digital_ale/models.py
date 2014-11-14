@@ -126,7 +126,14 @@ class SheetEntry(Base):
     data = Column(Unicode())
     status = Column(Enum(*SheetEntryState, name='sheetEntryState'))
     comment = Column(Unicode())
-    
+
+    _js_escape_map = {
+        ord('\n'): u'\\n',
+        ord('\r'): u'\\r',
+        ord('\\'): u'\\\\',
+        ord("'"): u"\\'",
+        }
+
     def __init__(self, concept_id, scan_name, scan_fkey, data):
         self.id = '%s-%s' % (concept_id, scan_name)
         self.scan_fkey = scan_fkey
@@ -135,6 +142,9 @@ class SheetEntry(Base):
         self.data = data
 
         self.comment = ''
+
+    def js_escaped_data(self):
+        return self.data.translate(SheetEntry._js_escape_map)
 
     @classmethod
     def get_by_scan_id(cls, scan_id):
