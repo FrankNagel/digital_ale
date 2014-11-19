@@ -126,7 +126,7 @@ def sheet_view(request):
     if 'submit' in request.POST:
         user = User.get_by_username(username)
         if user is None:
-            return HTTPUnauthorized()
+            return HTTPUnauthorized("Please log in to save changes.")
         if sheetEntry is None:
             sheetEntry = SheetEntry(scan.concept_fkey, scan.scan_name, scan.id, '')
             DBSession.add(sheetEntry)
