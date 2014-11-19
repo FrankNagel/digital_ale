@@ -25,41 +25,47 @@ var ParseResult = function() {
 
 function parse_sheet_entry(entry) {
     var part_re = /\(\s*[1-4]\s*\.\s*[a-zA-Z]+\s*\)/;
-    var result = new ParseResult();
+    var result_list = [];
     
     entry = entry.trim();
     var parts = entry.split(part_re);
-    parts.shift() //ignore stuff before '(1.IDENT)'
-    if (parts.length < 3) {
-        result.errors.push("Expecting at least 3 parts: (1.IDENT), (2.INFO), (3.DATA)");
-        result.success = false;
-    }
-    try {
-        parse_ident(parts.shift(), result);
-    } catch (err) {
-        result.errors.push("Internal Error parsing (1.IDENT): " + err);
-        result.success = false;
-    };
-    try {
-        parse_information(parts.shift(), result);
-    } catch (err) {
-        result.errors.push("Internal Error parsing (2.DATA): " + err);
-        result.success = false;
-    };
-    try {
-        parse_data(parts.shift(), result);
-    } catch (err) {
-        result.errors.push("Internal Error parsing (3.DATA): " + err);
-        result.success = false;
-    };
-    try {
-        parse_comment(parts.shift(), result);
-    } catch (err) {
-        result.errors.push("Internal Error parsing (4.KOM): " + err);
-        result.success = false;
-    };
 
-    return result;
+    parts.shift() //ignore stuff before '(1.IDENT)'
+    while (parts.length) {
+        var result = new ParseResult();
+        result_list.push(result)
+
+        if (parts.length < 3) {
+            result.errors.push("Expecting at least 3 parts: (1.IDENT), (2.INFO), (3.DATA)");
+            result.success = false;
+        }
+        try {
+            parse_ident(parts.shift(), result);
+        } catch (err) {
+            result.errors.push("Internal Error parsing (1.IDENT): " + err);
+            result.success = false;
+        };
+        try {
+            parse_information(parts.shift(), result);
+        } catch (err) {
+            result.errors.push("Internal Error parsing (2.DATA): " + err);
+            result.success = false;
+        };
+        try {
+            parse_data(parts.shift(), result);
+        } catch (err) {
+            result.errors.push("Internal Error parsing (3.DATA): " + err);
+            result.success = false;
+        };
+        try {
+            parse_comment(parts.shift(), result);
+        } catch (err) {
+            result.errors.push("Internal Error parsing (4.KOM): " + err);
+            result.success = false;
+        };
+    }
+
+    return result_list;
 }
 
 function parse_ident(entry, result) {
@@ -71,13 +77,13 @@ function parse_ident(entry, result) {
         result.success = false;
         return;
     }
-    result.sheet.ident.country = parts[0].replace('<u>', '').replace('</u>', '');
-    result.sheet.ident.question = parts[1].replace('<u>', '').replace('</u>', '');
+    result.sheet.ident.country = parts[0].replace(/<\/?u>/g, '');
+    result.sheet.ident.question = parts[1].replace(/<\/?u>/g, '');
 }
 
 function parse_information(entry, result) {
     if (entry === undefined) return;
-    result.sheet.info = entry.trim().split(/\n|\r|\r\n/);
+    result.sheet.info = entry.trim().replace(/<\/?u>/g, '').split(/\n|\r|\r\n/);
 }
 
 function parse_data(entry, result) {
@@ -108,21 +114,33 @@ function parse_comment(entry, result) {
     result.sheet.comment_lines = entry.trim().split(/\n|\r|\r\n/);
 }
 
+function render_sheet_list(result_list, canvas) {
+    var ystart = 230;
 
-function render_sheet(sheet, canvas) {
+    canvas.getContext('2d').clearRect(0, 0, canvas.width, canvas.height);
+    for (var i=0; i<result_list.length; i++) {
+        var parse_result = result_list[i];
+        if (parse_result.success) {
+            ystart = render_sheet(parse_result.sheet, canvas, ystart);
+        } else {
+            alert(parse_result.errors);
+        }
+    }
+}
+
+function render_sheet(sheet, canvas, y_pos) {
     var line_height = 22;
     var ctx = canvas.getContext('2d');
     ctx.fillStyle = "#0000FF";
     ctx.font = "12pt Arial";
 
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-
     //indent
-    ctx.fillText(sheet.ident.country, 720, 230);
-    ctx.fillText(sheet.ident.question, 720, 250);
+    ctx.fillText(sheet.ident.country, 720, y_pos);
+    y_pos += line_height;
+    ctx.fillText(sheet.ident.question, 720, y_pos);
+
 
     //information
-    y_pos = 250;
     for (var index = 0; index < sheet.info.length; index++) {
         ctx.fillText(sheet.info[index], 140, y_pos);
         y_pos += line_height;
@@ -142,12 +160,15 @@ function render_sheet(sheet, canvas) {
         y_pos = Math.max(y_pos_trans, y_pos_codes) + 10;
     }
 
-    y_pos += 20;
+    y_pos += line_height;
     //comment lines
     for (var index = 0; index < sheet.comment_lines.length; index++) {
         y_pos = render_line_wrapped(sheet.comment_lines[index], ctx, 140, 760, y_pos, line_height);
         y_pos += 5;
     }
+
+    y_pos += line_height;
+    return y_pos;
 }
 
 var decodeEntities = (function() {
@@ -195,8 +216,6 @@ var UnderlineRenderer = function(ctx) {
                     this.regions.push(offset + this.ctx.measureText(word.slice(0, index)).width);
                     this.start = undefined;
                 }
-                console.debug(tail);
-                console.debug(this.regions);
                 word = tail;
             } else {
                 break;
@@ -251,8 +270,8 @@ function render_line_wrapped(line, ctx, x_start, x_end, y_start, line_height) {
 
 function refresh_canvas() {
     var entry = $('#sheet_text').val();
-    var parse_result = parse_sheet_entry(entry);
-    render_sheet(parse_result.sheet, document.getElementById('canvas'));
+    var parse_result_list = parse_sheet_entry(entry);
+    render_sheet_list(parse_result_list, document.getElementById('canvas'));
 }
 
 $(function() {
