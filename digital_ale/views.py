@@ -187,7 +187,7 @@ def place_edit(request):
         return dict(status=404)
     place = PlaceOfInquiry.get(place_id)
     if request.method == 'POST':
-        for key, k_type in [('name', str), ('lng', float), ('lat', float), ('remarks', str)]:
+        for key, k_type in [('name', unicode), ('lng', float), ('lat', float), ('remarks', unicode)]:
             value = request.POST.get(key, '').strip()
             if not value:
                 continue
@@ -196,10 +196,7 @@ def place_edit(request):
             except:
                 request.response.status_code = 400
                 return dict(status=400, reason='"%s" not of expected type "%s"' % (key, k_type.__name__))
-            print key, value
             setattr(place, key, value)
-        print place.lng, place.lat
-        print dir(DBSession)
         return dict(status='OK')
     else:
         request.response.status_code = 400
