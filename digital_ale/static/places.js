@@ -10,7 +10,7 @@ var markers;
 var button_click_targets = {};
 var iconStyleRed = new ol.style.Style({
             image: new ol.style.Icon(/** @type {olx.style.IconOptions} */ ({
-                anchor: [0.5, 1],
+                anchor: [0.294, 1], //the point of the marker is off center due to shadow
                 anchorXUnits: 'fraction',
                 anchorYUnits: 'fraction',
                 opacity: 1,
@@ -21,7 +21,7 @@ var iconStyleRed = new ol.style.Style({
 
 var iconStyleGreen = new ol.style.Style({
             image: new ol.style.Icon(/** @type {olx.style.IconOptions} */ ({
-                anchor: [0.5, 1],
+                anchor: [0.294, 1], //the point of the marker is off center due to shadow
                 anchorXUnits: 'fraction',
                 anchorYUnits: 'fraction',
                 opacity: 1,
@@ -76,7 +76,7 @@ function ui_update_candidates(id) {
                 geometry: geometry,
                 lng: datapoint.lng,
                 lat: datapoint.lat
-            });
+           });
             iconFeature.setStyle(iconStyleRed);
             features.push(iconFeature);
         }
