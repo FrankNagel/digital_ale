@@ -1,6 +1,6 @@
 import os.path
 from collections import namedtuple
-
+import json
 from sqlalchemy import (
     Column,
     DDL,
@@ -10,6 +10,7 @@ from sqlalchemy import (
     ForeignKey,
     Index,
     Integer,
+    Float,
     Text,
     text,
     )
@@ -25,6 +26,7 @@ from sqlalchemy.orm import (
     )
 
 from sqlalchemy.types import (
+    CHAR,
     Enum,
     Integer,
     Unicode,
@@ -42,6 +44,7 @@ from pyramid.security import (
 from zope.sqlalchemy import ZopeTransactionExtension
 
 import cryptacular.bcrypt
+
 
 crypt = cryptacular.bcrypt.BCRYPTPasswordManager()
 
@@ -200,6 +203,87 @@ order by tc.id"""
         Record = namedtuple('AleOverview', result.keys())
         return [Record(*r) for r in result.fetchall()]
 
+class PlaceOfInquiry(Base):
+    __tablename__ = 'tbl_place_of_inquiry'
+    id = Column(Integer, primary_key=True)
+    pointcode_old = Column(Text, unique=True)
+    pointcode_new = Column(Text, unique=True)
+    name = Column(Text)
+    language_group = Column(Text)
+    lat = Column(Float)
+    lng = Column(Float)    
+    remarks = Column(Text)
+
+    @classmethod
+    def get_overview(cls):
+        cmd = """\
+select tp.id, tp.pointcode_old, tp.pointcode_new, tp.name, count(tc.id)
+from tbl_place_of_inquiry tp
+    left join tbl_place_candidate tc on tp.id = tc.place_of_inquiry_fkey
+group by tp.id
+order by tp.pointcode_old"""
+        
+        result = DBSession.execute(cmd)
+        Record = namedtuple('PlaceOverview', result.keys())
+        return [Record(*r) for r in result.fetchall()]
+
+    @classmethod
+    def get(cls, id):
+        return DBSession.query(PlaceOfInquiry).filter(cls.id == id).first()
+
+CandidateSourceClass = namedtuple('CandidateSource', 'google geonames')
+CandidateSource = CandidateSourceClass('google.com', 'geonames.org')
+
+class PlaceCandidate(Base):
+    __tablename__ = 'tbl_place_candidate'
+    id = Column(Integer, primary_key=True)
+    place_of_inquiry_fkey = Column(Integer, ForeignKey('tbl_place_of_inquiry.id'))
+    name = Column(Text)
+    lat = Column(Float)
+    lng = Column(Float)
+    country_code = Column(CHAR(2))
+    source = Column(Enum(*CandidateSource, name='candidate_source'))
+    feature_code = Column(Text)
+    complete_data = Column(Text)
+
+    @classmethod
+    def get_candidates(cls, place_id):
+        return DBSession.query(cls).filter(cls.place_of_inquiry_fkey == place_id).all()
+
+    @staticmethod
+    def parse_response_google(payload):
+        """Extract PlaceCandidates from a http request to http://maps.google.com/maps/api/geocode/json."""
+        candidates = []
+        for c in payload['results']:
+            pc = PlaceCandidate()
+            candidates.append(pc)
+            pc.name = c['address_components'][0]['long_name']
+            pc.lat = c['geometry']['location']['lat']
+            pc.lng = c['geometry']['location']['lng']
+            country_code = '  '
+            for address in c['address_components']:
+                if 'country' in address['types']:
+                    country_code = address['short_name']
+            pc.country_code = country_code
+            pc.feature_code = ','.join(c['types'])
+            pc.complete_data = json.dumps(c, indent=4, separators=(',', ': '))
+        return candidates
+
+
+    @staticmethod
+    def parse_response_geonames(payload):
+        """Extract PlaceCandidates from a HTTP request to http://api.geonames.org/search."""
+        candidates = []
+        for c in payload['geonames']:
+            pc = PlaceCandidate()
+            candidates.append(pc)
+            pc.name = c['name']
+            pc.lat = float(c['lat'])
+            pc.lng = float(c['lng'])
+            pc.country_code = c['countryCode']
+            pc.feature_code = c['fcode']
+            pc.complete_data = json.dumps(c, indent=4, separators=(',', ': '))
+        return candidates
 
 class RootFactory(object):
     __acl__ = [

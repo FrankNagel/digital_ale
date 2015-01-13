@@ -1,3 +1,5 @@
+import json
+
 from pyramid.response import Response
 from pyramid.view import view_config
 
@@ -7,6 +9,8 @@ from .models import (
     DBSession,
     User,
     Concept,
+    PlaceOfInquiry,
+    PlaceCandidate,
     Scan,
     SheetEntry,
     SheetEntryState,
@@ -25,12 +29,13 @@ from pyramid.security import (
     forget,
     )
 
-#WORK
+
 @view_config(route_name='home', renderer='templates/overview.mako')
 def main_view(request):
     username = authenticated_userid(request)
     return dict(username=username,
                 overview=Concept.get_overview())
+
 
 @view_config(route_name='register', renderer='templates/register.mako')
 def register_view(request):
@@ -62,13 +67,13 @@ def register_view(request):
             user = User(login_name, password, login_name, email)
             DBSession.add(user)
             success_msg = 'User created. You can log in now.'
-
     return dict(username=username,
                 login_name=login_name,
                 email = email,
                 success_msg = success_msg,
                 error_msg = error_msg,
                 url_next = request.route_url('home'))
+
 
 @view_config(route_name='login', renderer='templates/login.mako')
 def login_view(request):
@@ -91,6 +96,7 @@ def login_view(request):
         'url_next': url_next,
         'failed_attempt': did_fail,
     }
+
 
 @view_config(route_name='logout', renderer='templates/login.mako')
 def logout_view(request):
@@ -143,3 +149,58 @@ def sheet_view(request):
                 sheetEntry=sheetEntry,
                 sheetEntryState=SheetEntryState)
 
+
+@view_config(route_name='places', renderer='templates/places.mako')
+def places_view(request):
+    username = authenticated_userid(request)
+    places = PlaceOfInquiry.get_overview()
+    return dict(places=places, username=username)
+
+
+@view_config(route_name='place_candidates', renderer='json')
+def place_candidates_view(request):
+    place_id = request.matchdict['place_id']
+    try:
+        place_id = int(place_id)
+    except ValueError:
+        request.response.status_code = 400
+        return dict(status='INVALID_ARGUMENT', response=[])
+    place = PlaceOfInquiry.get(place_id)
+    place_json = dict(id=place.id, name=place.name, country_code=place.pointcode_new[2:], lat=place.lat, lng=place.lng)
+    wanted = set(['id', 'name', 'country_code', 'lat', 'lng', 'feature_code', 'source', 'complete_data'])
+    candidates = [{key: x.__dict__[key] for key in x.__dict__.keys() if key in wanted}
+                   for x in PlaceCandidate.get_candidates(place_id) if x.lat != place.lat or x.lng != place.lng ]
+    return dict(status='OK', selected=place_json, response=candidates)
+
+
+@view_config(route_name='place_edit', renderer='json')
+def place_edit(request):
+    username = authenticated_userid(request)
+    user = User.get_by_username(username)
+    if user is None:
+        request.response.status_code = 401
+        return dict(status=401)
+    try:
+        place_id = int(request.matchdict['place_id'])
+    except ValueError:
+        request.response.status_code = 404
+        return dict(status=404)
+    place = PlaceOfInquiry.get(place_id)
+    if request.method == 'POST':
+        for key, k_type in [('name', str), ('lng', float), ('lat', float), ('remarks', str)]:
+            value = request.POST.get(key, '').strip()
+            if not value:
+                continue
+            try:
+                value = k_type(value)
+            except:
+                request.response.status_code = 400
+                return dict(status=400, reason='"%s" not of expected type "%s"' % (key, k_type.__name__))
+            print key, value
+            setattr(place, key, value)
+        print place.lng, place.lat
+        print dir(DBSession)
+        return dict(status='OK')
+    else:
+        request.response.status_code = 400
+        return dict(status=400, reason='Unsupported HTTP method')

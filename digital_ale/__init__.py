@@ -42,8 +42,12 @@ def main(global_config, **settings):
     config.add_route('register', '/register')
     config.add_route('login', '/login')
     config.add_route('logout', '/logout')
+    config.add_route('places', '/places')
     config.add_route('concept', '/q/{concept_id}')
     config.add_route('sheet', 'q/{concept_id}/{scan_name}')
+
+    config.add_route('place_candidates', '/api/place_candidates/{place_id}')
+    config.add_route('place_edit', '/api/place/{place_id}/edit')
     
     config.scan()
     return config.make_wsgi_app()

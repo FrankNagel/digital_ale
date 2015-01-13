@@ -50,5 +50,6 @@ setup(name='digital_ale',
       initialize_digital_ale_db = digital_ale.scripts.initializedb:main
       ale_insert_concept = digital_ale.scripts.insert_concept:main
       ale_import_files = digital_ale.scripts.import_files:main
+      ale_import_places = digital_ale.scripts.import_places:main
       """,
       )
