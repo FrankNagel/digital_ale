@@ -1,27 +1,27 @@
 var SheetIdent = function() {
     this.country = '';
     this.question = '';
-}
+};
 
 var SheetDataRow = function() {
     this.code = '';
     this.transcription = '';
-    this.comment = ''
+    this.comment = '';
     this.city_codes = '';
-}
+};
 
 var AleSheet = function() {
-    this.ident = new SheetIdent;
+    this.ident = new SheetIdent();
     this.info = []; //nearly always two lines with extended country and question information
     this.data_rows = []; // list of SheetDataRow
     this.comment_lines = [];
-}
+};
 
 var ParseResult = function() {
     this.success = true;
     this.errors = [];
     this.sheet = new AleSheet();
-}
+};
 
 function parse_sheet_entry(entry) {
     var part_re = /\(\s*[1-4]\s*\.\s*[a-zA-Z]+\s*\)/;
@@ -30,10 +30,10 @@ function parse_sheet_entry(entry) {
     entry = entry.trim();
     var parts = entry.split(part_re);
 
-    parts.shift() //ignore stuff before '(1.IDENT)'
+    parts.shift(); //ignore stuff before '(1.IDENT)'
     while (parts.length) {
         var result = new ParseResult();
-        result_list.push(result)
+        result_list.push(result);
 
         if (parts.length < 3) {
             result.errors.push("Expecting at least 3 parts: (1.IDENT), (2.INFO), (3.DATA)");
@@ -44,25 +44,25 @@ function parse_sheet_entry(entry) {
         } catch (err) {
             result.errors.push("Internal Error parsing (1.IDENT): " + err);
             result.success = false;
-        };
+        }
         try {
             parse_information(parts.shift(), result);
         } catch (err) {
             result.errors.push("Internal Error parsing (2.DATA): " + err);
             result.success = false;
-        };
+        }
         try {
             parse_data(parts.shift(), result);
         } catch (err) {
             result.errors.push("Internal Error parsing (3.DATA): " + err);
             result.success = false;
-        };
+        }
         try {
             parse_comment(parts.shift(), result);
         } catch (err) {
             result.errors.push("Internal Error parsing (4.KOM): " + err);
             result.success = false;
-        };
+        }
     }
 
     return result_list;
@@ -147,15 +147,15 @@ function render_sheet(sheet, canvas, y_pos) {
     }
 
     //data rows
-    y_pos = Math.max(y_pos+10, 310)
+    y_pos = Math.max(y_pos+10, 310);
     for (var index = 0; index < sheet.data_rows.length; index++) {
         var data_row = sheet.data_rows[index];
         ctx.fillText(data_row.code, 75, y_pos);
-        var y_pos_trans = render_line_wrapped(data_row.transcription, ctx, 140, 390, y_pos, line_height)
+        var y_pos_trans = render_line_wrapped(data_row.transcription, ctx, 140, 390, y_pos, line_height);
         if (data_row.comment !== '') {
-            y_pos_trans = render_line_wrapped(data_row.comment, ctx, 140, 390, y_pos_trans, line_height)
+            y_pos_trans = render_line_wrapped(data_row.comment, ctx, 140, 390, y_pos_trans, line_height);
         }
-        var y_pos_codes = render_line_wrapped(data_row.city_codes, ctx, 410, 760, y_pos, line_height)
+        var y_pos_codes = render_line_wrapped(data_row.city_codes, ctx, 410, 760, y_pos, line_height);
         
         y_pos = Math.max(y_pos_trans, y_pos_codes) + 10;
     }
@@ -196,7 +196,7 @@ var UnderlineRenderer = function(ctx) {
 
     this.strip_tags = function(word) {
         return word.replace(/<u\s*>/g, "").replace(/<\/u\s*>/g, "");
-    }
+    };
 
     this.analyse = function(line, word) {
         var pattern;
@@ -221,7 +221,7 @@ var UnderlineRenderer = function(ctx) {
                 break;
             }
         }
-    }
+    };
 
     this.render = function(x, y) {
         if (this.start !== undefined) {
@@ -236,8 +236,8 @@ var UnderlineRenderer = function(ctx) {
             this.ctx.stroke();
         }
         this.regions = [];
-    }
-}
+    };
+};
 
 function render_line_wrapped(line, ctx, x_start, x_end, y_start, line_height) {
     var y_pos = y_start;
@@ -301,9 +301,9 @@ $(function() {
             var end = $(this).get(0).selectionEnd;
             
             // set textarea value to: text before caret + tab + text after caret
-            $(this).val($(this).val().substring(0, start)
-                        + "\t"
-                        + $(this).val().substring(end));
+            $(this).val($(this).val().substring(0, start) +
+                        "\t" + 
+                        $(this).val().substring(end));
             
             // put caret at right position again
             $(this).get(0).selectionStart =
