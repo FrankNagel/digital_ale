@@ -26,7 +26,7 @@
 </thead>
 <tbody>
 % for scan, sheet in sheetEntries:
-<tr><td><a href="${request.route_url('sheet', concept_id=scan.concept_fkey, scan_name=scan.scan_name)}" target="ale_sheet">${scan.scan_name}</a></td><td>${sheet is None and 'MISSING' or sheet.status}</td></tr>
+<tr><td><a href="${request.route_url('sheet', concept_id=scan.concept_fkey, scan_name=scan.scan_name)}">${scan.scan_name}</a></td><td>${sheet is None and 'MISSING' or sheet.status}</td></tr>
 % endfor
 </tbody>
 </table>
