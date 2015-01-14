@@ -45,11 +45,7 @@
     width:600px" spellcheck='false'></textarea>
     <p>Comment<br>
     <textarea id='sheet_comment' name='comment' style="margin-top:10px; height:20ex; width:600px"
-	      spellcheck='false'>
-% if sheetEntry:
-${sheetEntry.comment}
-% endif
-    </textarea>
+	      spellcheck='false'>${sheetEntry and sheetEntry.comment or ''}</textarea>
     </p>
   </div>
 </form>

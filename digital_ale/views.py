@@ -142,6 +142,7 @@ def sheet_view(request):
         sheetEntry.status = new_status
         sheetEntry.editor_fkey = user.id
         sheetEntry.data = request.POST.get('data', '')
+        sheetEntry.comment = request.POST.get('comment', '')
         message = 'Sheet saved.'
     return dict(username=username,
                 message=message,
