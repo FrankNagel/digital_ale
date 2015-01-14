@@ -93,7 +93,7 @@ function parse_data(entry, result) {
         part = parts[index];
         columns = part.split(/\t/);
         if (columns.length == 3) { //assume comment column missing
-            columns.splice(3, 0, '');
+            columns.splice(2, 0, '');
         }
         if (columns.length != 4) {
             result.errors.push("(3.DATA): Expecting four columns in line " + index + ': ' + part);
