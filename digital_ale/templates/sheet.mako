@@ -9,6 +9,13 @@
 	  src="http://code.jquery.com/ui/1.10.4/jquery-ui.js"></script>
   <script type="text/javascript" src="/static/sheet.js"></script>
 </%block>
+<%block name="breadcrumbs">
+<div>
+  <a class='home' href='/'>Digital ALE - Atlas Linguarum Europae</a> /
+  <a href=${request.route_url('concept', concept_id=scan.concept_fkey)}>Question ${scan.concept_fkey}</a>
+</div>
+</%block>
+
 <form method='post' action='${ req.url }'>
   <div id='overlay' style="float:left; position: relative; height:1132px;
 			   width:802px; display:inline-block; background-color:#F5F5F5">

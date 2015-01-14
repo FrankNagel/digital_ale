@@ -8,7 +8,9 @@
 </head>
 <body>
 <div class='header'>
+<%block name="breadcrumbs">
 <div><a class='home' href='/'>Digital ALE - Atlas Linguarum Europae</a></div>
+</%block>
 <div class='header_spacer'></div>
 % if username:
 <div>Logged in as ${ username }. <a href='${ request.route_url('logout') }'>Logout</a></div>
