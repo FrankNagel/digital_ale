@@ -91,6 +91,9 @@ function parse_data(entry, result) {
     var parts = entry.trim().split(/\n|\r|\r\n/);
     for (var index = 0; index < parts.length; index++) {
         part = parts[index];
+        if (part.trim() === '' || part.trim().toUpperCase() === 'NV') {
+            continue;
+        }
         columns = part.split(/\t/);
         if (columns.length == 3) { //assume comment column missing
             columns.splice(2, 0, '');
