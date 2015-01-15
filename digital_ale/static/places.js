@@ -181,10 +181,10 @@ $(document).ready(function(){
         lat = lnglat[1];
 
         //initialize dialog
-        $('#place-id').attr('value', place_id);
-        $('#place-name').attr('value', place_name);
-        $('#place-lng').attr('value', lng);
-        $('#place-lat').attr('value', lat);
+        $('#place-id').prop('value', place_id);
+        $('#place-name').prop('value', place_name);
+        $('#place-lng').prop('value', lng);
+        $('#place-lat').prop('value', lat);
         $('#place-form').dialog({
             buttons: {
                 "Save": place_save_changes,

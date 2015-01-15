@@ -54,7 +54,7 @@
 </div>
 
 <div id="place-form" title="Modify Place of Inquiry" style='display: none'>
-<form>
+<form action='#' onsubmit="place_save_changes(); return false;">
 <fieldset>
 <input type="hidden" name="id" id="place-id" value="">
 
@@ -68,7 +68,7 @@
 <input type="text" name="lng" id="place-lng" value="" class="text ui-widget-content ui-corner-all">
 
 <!-- Allow form submission with keyboard without duplicating the dialog button -->
-<input type="submit" tabindex="-1" style="position:absolute; top:-1000px">
+<input type="submit" tabindex="-1" style="display:none">
 </fieldset>
 </form>
 </div>
