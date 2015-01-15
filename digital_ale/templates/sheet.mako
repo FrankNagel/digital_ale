@@ -19,7 +19,7 @@
 <form method='post' action='${ req.url }'>
   <div id='overlay' style="float:left; position: relative; height:1132px;
 			   width:802px; display:inline-block; background-color:#F5F5F5">
-    <div id='rendered-view' style="position: absolute; top:0; left:0; height:1132px; display:inline-block">
+    <div id='rendered-view' style="position: absolute; top:150px; left:0; height:1132px; display:inline-block">
       <canvas height='1130' width='800px' id='canvas' style='height:1130px;
 	      width:800px; overflow:hidden; background-color:#F5F5F5; border:1px solid #000000;'>
       </canvas>

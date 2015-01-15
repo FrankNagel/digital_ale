@@ -118,7 +118,7 @@ function parse_comment(entry, result) {
 }
 
 function render_sheet_list(result_list, canvas) {
-    var ystart = 230;
+    var ystart = 70;
 
     canvas.getContext('2d').clearRect(0, 0, canvas.width, canvas.height);
     for (var i=0; i<result_list.length; i++) {
@@ -150,7 +150,7 @@ function render_sheet(sheet, canvas, y_pos) {
     }
 
     //data rows
-    y_pos = Math.max(y_pos+10, 310);
+    y_pos += 10;
     for (var index = 0; index < sheet.data_rows.length; index++) {
         var data_row = sheet.data_rows[index];
         ctx.fillText(data_row.code, 75, y_pos);
