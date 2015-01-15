@@ -113,12 +113,11 @@ function show_sibling(event) {
 }
 
 function place_save_changes() {
-    var id = parseInt($('#place-id').attr('value'));
+    var id = parseInt($('#place-id').prop('value'));
     var payload = {
-        id: $('#place-id').attr('value'),
-        name: $('#place-name').attr('value'),
-        lng: parseFloat($('#place-lng').attr('value')),
-        lat: parseFloat($('#place-lat').attr('value'))
+        name: $('#place-name').prop('value'),
+        lng: parseFloat($('#place-lng').prop('value')),
+        lat: parseFloat($('#place-lat').prop('value'))
     };
     $.ajax('/api/place/' + id + '/edit', {
         type: 'POST',
