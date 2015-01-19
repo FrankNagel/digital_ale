@@ -97,8 +97,15 @@ function ui_update_candidates(id) {
             map.getView().setZoom(4);
         } else {
             var geom = new ol.geom.MultiPoint(coordinates);
+            var maxZoom = coordinates.length == 1 ? 11 : 13;
             geom.transform('EPSG:4326', 'EPSG:3857');
-            map.getView().fitGeometry(geom, [1200,800], {maxZoom: 13, padding: [40, 20, 10, 20] });
+            var pan = ol.animation.pan({
+                duration: 1500,
+                source: /** @type {ol.Coordinate} */ (map.getView().getCenter())
+            });
+            map.renderSync();
+            map.beforeRender(pan);
+            map.getView().fitGeometry(geom, [1200,800], {maxZoom: maxZoom, padding: [40, 20, 10, 20] });
         }
         $('.cd-panel').removeClass('is-visible');
     }).fail(function(jqXHR, textStatus, errorThrown) {
