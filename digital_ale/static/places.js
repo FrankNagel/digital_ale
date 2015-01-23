@@ -175,6 +175,7 @@ function place_save_from_map() {
     var id = parseInt($('#place-id').prop('value'));
     var payload = {
         place_id: id,
+        name: $('#place-name').prop('value').trim(),
         lng: $('#place-lng').prop('value').trim(),
         lat: $('#place-lat').prop('value').trim()
     };
