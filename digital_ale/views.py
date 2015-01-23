@@ -243,7 +243,7 @@ def place_candidate_add(request):
         return dict(status=401)
     candidate = PlaceCandidate()
     for key, k_type, attr_name in [('place_id', int, 'place_of_inquiry_fkey'),
-                                   ('name', str, 'name'),
+                                   ('name', unicode, 'name'),
                                    ('lat', float, 'lat'),
                                    ('lng', float, 'lng')]:
         value = request.POST.get(key, '').strip()
