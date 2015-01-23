@@ -26,6 +26,7 @@ from sqlalchemy.orm import (
     )
 
 from sqlalchemy.types import (
+    BOOLEAN,
     CHAR,
     Enum,
     Integer,
@@ -213,11 +214,12 @@ class PlaceOfInquiry(Base):
     lat = Column(Float)
     lng = Column(Float)    
     remarks = Column(Text)
+    coordinates_validated = Column(BOOLEAN, default=False)
 
     @classmethod
     def get_overview(cls):
         cmd = """\
-select tp.id, tp.pointcode_old, tp.pointcode_new, tp.name, count(tc.id)
+select tp.id, tp.pointcode_old, tp.pointcode_new, tp.name, tp.lat, tp.lng, tp.coordinates_validated, count(tc.id)
 from tbl_place_of_inquiry tp
     left join tbl_place_candidate tc on tp.id = tc.place_of_inquiry_fkey
 group by tp.id
@@ -231,8 +233,9 @@ order by tp.pointcode_old"""
     def get(cls, id):
         return DBSession.query(PlaceOfInquiry).filter(cls.id == id).first()
 
-CandidateSourceClass = namedtuple('CandidateSource', 'google geonames')
-CandidateSource = CandidateSourceClass('google.com', 'geonames.org')
+
+CandidateSourceClass = namedtuple('CandidateSource', 'google geonames manual ale')
+CandidateSource = CandidateSourceClass('google.com', 'geonames.org', 'manual', 'ale')
 
 class PlaceCandidate(Base):
     __tablename__ = 'tbl_place_candidate'
@@ -247,8 +250,16 @@ class PlaceCandidate(Base):
     complete_data = Column(Text)
 
     @classmethod
-    def get_candidates(cls, place_id):
+    def get_candidate(cls, candidate_id):
+        return DBSession.query(cls).filter(cls.id == candidate_id).first()
+    
+    @classmethod
+    def get_candidates_for_place(cls, place_id):
         return DBSession.query(cls).filter(cls.place_of_inquiry_fkey == place_id).all()
+
+    @classmethod
+    def get_candidates_count(cls, place_id):
+        return DBSession.query(cls).filter(cls.place_of_inquiry_fkey == place_id).count()
 
     @staticmethod
     def parse_response_google(payload):
@@ -265,6 +276,7 @@ class PlaceCandidate(Base):
                 if 'country' in address['types']:
                     country_code = address['short_name']
             pc.country_code = country_code
+            pc.source = CandidateSource.google
             pc.feature_code = ','.join(c['types'])
             pc.complete_data = json.dumps(c, indent=4, separators=(',', ': '))
         return candidates
@@ -281,6 +293,7 @@ class PlaceCandidate(Base):
             pc.lat = float(c['lat'])
             pc.lng = float(c['lng'])
             pc.country_code = c['countryCode']
+            pc.source = CandidateSource.geonames
             pc.feature_code = c['fcode']
             pc.complete_data = json.dumps(c, indent=4, separators=(',', ': '))
         return candidates

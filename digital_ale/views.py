@@ -8,6 +8,7 @@ from sqlalchemy.exc import DBAPIError
 from .models import (
     DBSession,
     User,
+    CandidateSource,
     Concept,
     PlaceOfInquiry,
     PlaceCandidate,
@@ -167,14 +168,24 @@ def place_candidates_view(request):
         request.response.status_code = 400
         return dict(status='INVALID_ARGUMENT', response=[])
     place = PlaceOfInquiry.get(place_id)
+    if place is None:
+        request.response.status_code = 404
+        return dict(status=404)
     place_json = dict(id=place.id, name=place.name, country_code=place.pointcode_new[2:], lat=place.lat, lng=place.lng)
     wanted = set(['id', 'name', 'country_code', 'lat', 'lng', 'feature_code', 'source', 'complete_data'])
     candidates = [{key: x.__dict__[key] for key in x.__dict__.keys() if key in wanted}
-                   for x in PlaceCandidate.get_candidates(place_id) if x.lat != place.lat or x.lng != place.lng ]
-    return dict(status='OK', selected=place_json, response=candidates)
+                   for x in PlaceCandidate.get_candidates_for_place(place_id)]
+    for c in candidates:
+        c['selected'] = c['lat'] == place.lat and c['lng'] == place.lng
+    return dict(status='OK', candidates=candidates)
 
+coord_parser = lambda x: x and float(x) or None
+coord_parser.__name__ = '<float>|null'
 
-@view_config(route_name='place_edit', renderer='json')
+bool_parser = lambda x: True if x == 'true' else False
+bool_parser.__name__ = 'true|false'
+
+@view_config(route_name='place_edit', renderer='json', request_method='POST')
 def place_edit(request):
     username = authenticated_userid(request)
     user = User.get_by_username(username)
@@ -187,18 +198,88 @@ def place_edit(request):
         request.response.status_code = 404
         return dict(status=404)
     place = PlaceOfInquiry.get(place_id)
-    if request.method == 'POST':
-        for key, k_type in [('name', unicode), ('lng', float), ('lat', float), ('remarks', unicode)]:
-            value = request.POST.get(key, '').strip()
-            if not value:
-                continue
-            try:
-                value = k_type(value)
-            except:
-                request.response.status_code = 400
-                return dict(status=400, reason='"%s" not of expected type "%s"' % (key, k_type.__name__))
-            setattr(place, key, value)
-        return dict(status='OK')
-    else:
+    place.coordinates_validated = True
+    for key, k_type in [('name', unicode), ('lng', coord_parser), ('lat', coord_parser), ('remarks', unicode),
+                        ('coordinates_validated', bool_parser)]:
+        if not request.POST.has_key(key):
+            continue
+        value = request.POST.get(key).strip()
+        try:
+            value = k_type(value)
+        except:
+            request.response.status_code = 400
+            return dict(status=400, reason='"%s" not of expected type "%s"' % (key, k_type.__name__))
+        setattr(place, key, value)
+    if place.lat == None or place.lng == None:
+        place.lat = place.lng = None
+        place.coordinates_validated = False
+    return dict(status='OK')
+
+
+@view_config(route_name='place_get', renderer='json', request_method='GET')
+def place_get(request):
+    try:
+        place_id = int(request.matchdict['place_id'])
+    except ValueError:
+        request.response.status_code = 404
+        return dict(status=404)    
+    place = PlaceOfInquiry.get(place_id)
+    if not place:
+        request.response.status_code = 404
+        return dict(status=404)
+    candidate_count = PlaceCandidate.get_candidates_count(place_id)
+    wanted = set(['id', 'pointcode_old', 'pointcode_new', 'name', 'lat', 'lng', 'remarks', 'coordinates_validated'])
+    response = {key: place.__dict__[key] for key in place.__dict__.keys() if key in wanted}
+    response['candidate_count'] = candidate_count
+    return response
+
+
+@view_config(route_name='place_candidate_add', renderer='json', request_method='POST')
+def place_candidate_add(request):
+    username = authenticated_userid(request)
+    user = User.get_by_username(username)
+    if user is None:
+        request.response.status_code = 401
+        return dict(status=401)
+    candidate = PlaceCandidate()
+    for key, k_type, attr_name in [('place_id', int, 'place_of_inquiry_fkey'),
+                                  ('lat', float, 'lat'),
+                                  ('lng', float, 'lng')]:
+        value = request.POST.get(key, '').strip()
+        if not value:
+            continue
+        try:
+            value = k_type(value)
+        except:
+            request.response.status_code = 400
+            return dict(status=400, reason='"%s" not of expected type "%s"' % (key, k_type.__name__))
+        setattr(candidate, attr_name, value)
+    if not (candidate.place_of_inquiry_fkey and candidate.lat and candidate.lng):
         request.response.status_code = 400
-        return dict(status=400, reason='Unsupported HTTP method')
+        return dict(status=400, reason='One of the neccessary attributes place_id, lat, lng is missing.')
+    candidate.source = CandidateSource.manual
+    DBSession.add(candidate)
+    return dict(status='OK')
+
+
+@view_config(route_name='place_candidate', renderer='json', request_method='DELETE')
+def place_candidate_delete(request):
+    username = authenticated_userid(request)
+    user = User.get_by_username(username)
+    if user is None:
+        request.response.status_code = 401
+        return dict(status=401)
+    try:
+        candidate_id = int(request.matchdict['candidate_id'])
+    except ValueError:
+        request.response.status_code = 404
+        return dict(status=404)        
+    candidate = PlaceCandidate.get_candidate(candidate_id)
+    if not candidate:
+        request.response.status_code = 404
+        return dict(status=404, reason='Resource does not exist.')
+    DBSession.delete(candidate)
+    place = PlaceOfInquiry.get(candidate.place_of_inquiry_fkey)
+    if place.lat == candidate.lat and place.lng == candidate.lng:
+        place.lat = place.lng = None
+        place.coordinates_validated = False

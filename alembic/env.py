@@ -58,7 +58,8 @@ def run_migrations_online():
     connection = engine.connect()
     context.configure(
         connection=connection,
-        target_metadata=target_metadata
+        target_metadata=target_metadata,
+	transaction_per_migration=True
     )
 
     try:

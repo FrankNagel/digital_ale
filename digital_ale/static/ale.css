@@ -221,3 +221,20 @@ div.rotated {
     transform: translate3d(0, 0, 0);
     transition-delay: 0s;
 }
+
+.place-form {
+    display: flex;
+    flex-flow: row wrap;
+    width: 650px;
+}
+
+.place-form label {
+    min-width: 9ex;
+    display: inline-block;
+    margin-bottom: 5px;
+}
+
+.place-form textarea {
+    height: 20ex;
+    width: 600px;
+}
