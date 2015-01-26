@@ -48,8 +48,8 @@
           <tbody>
 % for r in places:
             <tr class='place-row' dbid=${r.id}><td>${r.pointcode_old}</td><td>${r.pointcode_new}</td><td>${r.name}</td><td>${r.count}</td>
-	      <td><input type='checkbox' ${(r.lat and r.lng) and 'checked' or ''} disabled></input></td>
-	      <td><input type='checkbox' ${(r.coordinates_validated) and 'checked' or ''} disabled></input></td>
+	      <td><input type='checkbox' ${(r.lat and r.lng) and 'checked' or ''} disabled></td>
+	      <td><input type='checkbox' ${(r.coordinates_validated) and 'checked' or ''} disabled></td>
             </tr>
 % endfor
           </tbody>
@@ -61,7 +61,7 @@
 </div>
 
 <div id="place-form" class="place-form" title="Place Form" style='display: none'>
-  <form action='#' onsubmit="place_save_changes(); return false;">
+  <form action='#'>
     <fieldset>
       <input type="hidden" name="place-id" id="place-id" value="">
       <input type="hidden" name="candidate-id" id="candidate-id" value="">

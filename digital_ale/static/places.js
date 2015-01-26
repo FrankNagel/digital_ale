@@ -230,12 +230,20 @@ function open_dialog(lat, lng, from_candidate, candidate_id) {
         buttons.Cancel= function() {
             $('#place-form').dialog( "close" );
         };
+        $('#place-form > form').on('submit', function(event) {
+            place_save_from_candidate();
+            event.preventDefault();
+        });
         $('#place-form').dialog({
             width: 700,
             title: 'Set Place of Inquiry from Candidate',
             buttons: buttons
         });
     } else {
+        $('#place-form > form').on('submit', function(event) {
+            place_save_from_map();
+            event.preventDefault();
+        });
         $('#place-form').dialog({
             width: 700,
             title: 'Set Place of Inquiry',
