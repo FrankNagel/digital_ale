@@ -254,6 +254,7 @@ function open_dialog(lat, lng, from_candidate, candidate_id) {
     $('#place-lng').prop('value', lng).prop('disabled', from_candidate);
     $('#place-lat').prop('value', lat).prop('disabled', from_candidate);
   
+    $('#place-form > form').off('submit');
     if (from_candidate){
         var buttons = {};
         if (candidate_id) {
