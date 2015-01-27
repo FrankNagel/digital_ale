@@ -29,6 +29,17 @@ var iconStyleGreen = new ol.style.Style({
             }))
         });
 
+var iconStyleYellow = new ol.style.Style({
+            image: new ol.style.Icon(/** @type {olx.style.IconOptions} */ ({
+                anchor: [0.294, 1], //the point of the marker is off center due to shadow
+                anchorXUnits: 'fraction',
+                anchorYUnits: 'fraction',
+                opacity: 1,
+                scale: 0.02,
+                src: '/static/img/Map-Marker-Yellow.svg'
+            }))
+        });
+
 function place_sync_state(id) {
     $.ajax('/api/place/' + id, {
         type: 'GET',
@@ -85,8 +96,30 @@ function ui_update_candidates(id) {
         }        
         var features = [];
         var coordinates = []; //to set Extent
+
         for (var i=0; i< msg.candidates.length; i++) {
             var datapoint = msg.candidates[i];
+            if (datapoint.selected || datapoint.source === 'ale') continue;
+            var geometry = new ol.geom.Point([datapoint.lng, datapoint.lat]);
+            coordinates.push([datapoint.lng, datapoint.lat]);
+            geometry.transform('EPSG:4326', 'EPSG:3857');
+            var iconFeature = new ol.Feature({
+                geometry: geometry,
+                name: datapoint.name,
+                source: datapoint.source,
+                feature_code: datapoint.feature_code,
+                lng: datapoint.lng,
+                lat: datapoint.lat,
+                candidate_id: datapoint.id,
+                selected : datapoint.selected
+            });
+            iconFeature.setStyle(iconStyleRed);
+            features.push(iconFeature);
+        }
+
+        for (var i=0; i< msg.candidates.length; i++) {
+            var datapoint = msg.candidates[i];
+            if ( (!datapoint.selected) && datapoint.source !== 'ale') continue;
             var geometry = new ol.geom.Point([datapoint.lng, datapoint.lat]);
             coordinates.push([datapoint.lng, datapoint.lat]);
             geometry.transform('EPSG:4326', 'EPSG:3857');
@@ -102,8 +135,8 @@ function ui_update_candidates(id) {
             });
             if (datapoint.selected) {
                 iconFeature.setStyle(iconStyleGreen);
-            } else {
-                iconFeature.setStyle(iconStyleRed);
+            } else { // datapoint.source === 'ale'
+                iconFeature.setStyle(iconStyleYellow);
             }
             features.push(iconFeature);
         }
