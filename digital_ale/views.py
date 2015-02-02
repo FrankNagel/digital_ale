@@ -158,6 +158,11 @@ def places_view(request):
     places = PlaceOfInquiry.get_overview()
     return dict(places=places, username=username)
 
+@view_config(route_name='places_all', renderer='templates/places_all.mako')
+def places_all_view(request):
+    username = authenticated_userid(request)
+    return dict(username=username)
+
 
 @view_config(route_name='place_candidates', renderer='json')
 def place_candidates_view(request):
@@ -231,6 +236,15 @@ def place_get(request):
     wanted = set(['id', 'pointcode_old', 'pointcode_new', 'name', 'lat', 'lng', 'remarks', 'coordinates_validated'])
     response = {key: place.__dict__[key] for key in place.__dict__.keys() if key in wanted}
     response['candidate_count'] = candidate_count
+    return response
+
+
+@view_config(route_name='place_get_all', renderer='json', request_method='GET')
+def place_get_all(request):
+    places = DBSession.query(PlaceOfInquiry).filter('lat is not null').all();
+    wanted = set(['id', 'pointcode_old', 'pointcode_new', 'name', 'lat', 'lng', 'remarks', 'coordinates_validated'])
+    response = [{key: place.__dict__[key] for key in place.__dict__.keys() if key in wanted} for place in places]
+    return dict(status='OK', places=response)
     return response
 
 
