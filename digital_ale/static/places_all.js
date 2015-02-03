@@ -40,8 +40,9 @@ function ui_show_all_places() {
                 pointcode_new: datapoint.pointcode_new,
                 lng: datapoint.lng,
                 lat: datapoint.lat,
+                coordinates_validated: datapoint.coordinates_validated,
             });
-            iconFeature.setStyle(iconStyleGreen);
+            //iconFeature.setStyle(iconStyleGreen);
             features.push(iconFeature);
         }
 
@@ -116,12 +117,28 @@ $(document).ready(function(){
                     anchorYUnits: 'fraction',
                     opacity: 1,
                     scale: scale,
-                    src: '/static/img/Round-Marker-Red.svg'
+                    src: '/static/img/Round-Marker-Red-Green.svg'
                 }))
             });
 
+            var iconStyleYellow = new ol.style.Style({
+                image: new ol.style.Icon(/** @type {olx.style.IconOptions} */ ({
+                    anchor: [0.5, 0.5], //the point of the marker is off center due to shadow
+                    anchorXUnits: 'fraction',
+                    anchorYUnits: 'fraction',
+                    opacity: 1,
+                    scale: scale,
+                    src: '/static/img/Round-Marker-Red-Yellow.svg'
+                }))
+            });
+
+            
             markers.getSource().forEachFeature( function(feature) {
-                feature.setStyle(iconStyleGreen);
+                if (feature.get('coordinates_validated')) {
+                    feature.setStyle(iconStyleGreen);
+                } else {
+                    feature.setStyle(iconStyleYellow);
+                }
             });
         }
     });
