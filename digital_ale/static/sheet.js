@@ -154,6 +154,10 @@ function render_sheet(sheet, canvas, y_pos) {
     for (var index = 0; index < sheet.data_rows.length; index++) {
         var data_row = sheet.data_rows[index];
         ctx.fillText(data_row.code, 75, y_pos);
+        console.log(ctx.measureText(data_row.code));
+        if (ctx.measureText(data_row.code).width > 60) {
+            y_pos += line_height;
+        }
         var y_pos_trans = render_line_wrapped(data_row.transcription, ctx, 140, 390, y_pos, line_height);
         if (data_row.comment !== '') {
             y_pos_trans = render_line_wrapped(data_row.comment, ctx, 140, 390, y_pos_trans, line_height);
@@ -213,10 +217,12 @@ var UnderlineRenderer = function(ctx) {
                 tail = tail.slice(index2+1);
                 if (this.start === undefined) {
                     this.start = offset + this.ctx.measureText(word.slice(0, index)).width;
-                    this.tmp_end = offset + this.start + this.ctx.measureText(tail).width;
+                    offset = this.start;
+                    this.tmp_end = offset + this.ctx.measureText(tail).width;
                 } else {
                     this.regions.push(this.start);
                     this.regions.push(offset + this.ctx.measureText(word.slice(0, index)).width);
+                    offset = this.start;
                     this.start = undefined;
                 }
                 word = tail;
@@ -228,8 +234,8 @@ var UnderlineRenderer = function(ctx) {
 
     this.render = function(x, y) {
         if (this.start !== undefined) {
-            this.regions.push(start);
-            this.regions.push(tmp_end);
+            this.regions.push(this.start);
+            this.regions.push(this.tmp_end);
             this.start = 0;
         }
         for (var i=0; i < this.regions.length; i+=2) {
@@ -258,7 +264,7 @@ function render_line_wrapped(line, ctx, x_start, x_end, y_start, line_height) {
             ctx.fillText(render_line, x_start, y_pos);
             underline.render(x_start, y_pos+4);
             render_line = underline.strip_tags(words[n] + ' ');
-            underline.analyse('', render_line);
+            underline.analyse('', words[n] + ' ');
             y_pos += line_height;
         }
         else {
