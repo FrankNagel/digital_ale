@@ -175,7 +175,7 @@ def concept_tsv_view(request):
         return HTTPNotFound()
     pronounciations = Pronounciation.get_by_concept_id(concept_id)
     result = []
-    for p, sheet_entry in pronounciations:
+    for p, sheet_entry, scan in pronounciations:
         for place in p.observations:
             result.append('%s\t%s\t%s\t%s\n' % (p.pronounciation, place.pointcode_old, concept_id, sheet_entry.id))
     return ''.join(result)
