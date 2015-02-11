@@ -45,6 +45,9 @@ def main(global_config, **settings):
     config.add_route('places', '/places')
     config.add_route('places_all', '/all_places')
     config.add_route('concept', '/q/{concept_id}')
+    config.add_route('concept_data', '/q/{concept_id}/data')
+    config.add_route('concept_tsv', '/q/{concept_id}/tsv')
+    config.add_route('sheet_prefix_data', '/s/{sheet_prefix}/data')
     config.add_route('sheet', 'q/{concept_id}/{scan_name}')
 
     config.add_route('place_candidates', '/api/place_candidates/{place_id}')

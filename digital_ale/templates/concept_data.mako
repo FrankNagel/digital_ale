@@ -13,35 +13,48 @@
   <script type="text/javascript"
   	  src="//cdn.datatables.net/plug-ins/380cb78f450/integration/jqueryui/dataTables.jqueryui.js"></script>
 </%block>
+% if concept:
 <h2>Concept ${concept.id}</h2>
-<p><b>eng</b> ${concept.eng}<br><b>fra</b> ${concept.fra}</p>
-<p>
-  <a href='${request.route_url('concept_data', concept_id=concept.id)}'>Extracted Data</a><br>
-  <a href='${request.route_url('concept_tsv', concept_id=concept.id)}'>Extracted Data as TSV</a><br>
-</p>
-
-<h3>Scans</h3>
-<div class="concept_table_wrapper">
-<table class="concept_table display compact">
+% endif
+% if have_messages:
+<h3>Parser Messages</h3>
+% for scan, sheet in scans_sheets:
+% if sheet and sheet.parser_messages:
+<a href='${request.route_url('sheet', concept_id=scan.concept_fkey, scan_name=scan.scan_name)}''>Sheet ${ '%i/%s' % (scan.concept_fkey, scan.scan_name) } </a>
+<pre>
+${sheet.parser_messages}
+</pre>
+% endif
+% endfor
+% endif
+<h3>Extracted Data</h3>
+<table class='overview_table display'>
 <thead>
   <tr>
-    <th>Scan</th>
-    <th>Status</th>
-  </tr>
+    <td>Pronounciation</td>
+    <td>Pointcode_old</td>
+    <td>Sheet</td>
+ </tr>
 </thead>
 <tbody>
-% for scan, sheet in sheetEntries:
-<tr><td><a href="${request.route_url('sheet', concept_id=scan.concept_fkey, scan_name=scan.scan_name)}">${scan.scan_name}</a></td><td>${sheet is None and 'MISSING' or sheet.status}</td></tr>
+% for p, sheet_entry, scan in pronounciations:
+  <tr>
+    <td>${p.pronounciation}</td>
+    <td>
+% for place in p.observations:
+${place.pointcode_old}
+% endfor
+</td>
+    <td><a href='${request.route_url('sheet', concept_id=scan.concept_fkey, scan_name=scan.scan_name)}''>${ '%03i/%s' % (scan.concept_fkey, scan.scan_name) }</a></td>
+  </tr>
 % endfor
 </tbody>
 </table>
-</div>
+
 <%block name="js_footer">
 <script type="text/javascript">
   $(document).ready(function(){
-    $('.concept_table').DataTable({
-      paging: false
-      });
+    $('.overview_table').DataTable({paging: false});
   });
 </script>
 </%block>

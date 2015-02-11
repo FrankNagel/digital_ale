@@ -18,6 +18,7 @@ from sqlalchemy import (
 from sqlalchemy.ext.declarative import declarative_base
 
 from sqlalchemy.orm import (
+    relationship,
     scoped_session,
     sessionmaker,
     column_property,
@@ -45,6 +46,8 @@ from pyramid.security import (
 from zope.sqlalchemy import ZopeTransactionExtension
 
 import cryptacular.bcrypt
+
+from sheet_parser import SheetParser
 
 
 crypt = cryptacular.bcrypt.BCRYPTPasswordManager()
@@ -115,9 +118,15 @@ class Scan(Base):
         self.modification_date = None
 
     @classmethod
+    def get_by_concept_id(cls, concept_id):
+        return DBSession.query(Scan).filter(Scan.concept_fkey == concept_id).all()
+
+    @classmethod
     def get_by_concept_name(cls, concept_id, scan_name):
         return DBSession.query(Scan).filter(and_(Scan.concept_fkey == concept_id, Scan.scan_name == scan_name)).first()
 
+
+    
 SheetEntryStateClass = namedtuple('SheetEntryState', 'unchecked contains_at in_progress problematic ok ignore')
 SheetEntryState = SheetEntryStateClass('Unchecked', 'Contains @', 'In Progress', 'Problematic', 'OK', 'Ignore')
 
@@ -130,6 +139,7 @@ class SheetEntry(Base):
     data = Column(Unicode())
     status = Column(Enum(*SheetEntryState, name='sheetEntryState'))
     comment = Column(Unicode())
+    parser_messages = Column(Text)
 
     _js_escape_map = {
         ord('\n'): u'\\n',
@@ -150,15 +160,40 @@ class SheetEntry(Base):
     def js_escaped_data(self):
         return self.data.translate(SheetEntry._js_escape_map)
 
+    def extract_data(self, parser=None):
+        DBSession.query(Pronounciation).filter(Pronounciation.sheet_entry_fkey == self.id).delete()
+        DBSession.flush()
+        if parser is None:
+            places = DBSession.query(PlaceOfInquiry).all()
+            parser = SheetParser(places)
+        pronounciations = parser.parse(self)
+        for p in pronounciations:
+            DBSession.add(p)
+        DBSession.flush()
+
     @classmethod
     def get_by_scan_id(cls, scan_id):
         return DBSession.query(SheetEntry).filter(SheetEntry.scan_fkey == scan_id).first()
+
+    @classmethod
+    def get_sheet_entry_by_concept_id(cls, concept_id):
+        return DBSession.query(SheetEntry).outerjoin(Scan, Scan.id == SheetEntry.scan_fkey) \
+          .filter(Scan.concept_fkey == concept_id) \
+          .order_by(SheetEntry.id) \
+          .all()
 
     @classmethod
     def get_scan_entry_by_concept_id(cls, concept_id):
         return DBSession.query(Scan, SheetEntry).outerjoin(SheetEntry, Scan.id == SheetEntry.scan_fkey) \
           .filter(Scan.concept_fkey == concept_id) \
           .order_by(Scan.scan_name) \
+          .all()
+
+    @classmethod
+    def get_scan_entry_by_prefix(cls, prefix):
+        return DBSession.query(Scan, SheetEntry).outerjoin(SheetEntry, Scan.id == SheetEntry.scan_fkey) \
+          .filter(Scan.scan_name.like(prefix + '%')) \
+          .order_by(Scan.concept_fkey, Scan.scan_name) \
           .all()
 
 
@@ -214,7 +249,7 @@ class PlaceOfInquiry(Base):
     lat = Column(Float)
     lng = Column(Float)    
     remarks = Column(Text)
-    coordinates_validated = Column(BOOLEAN, default=False)
+    coordinates_validated = Column(BOOLEAN, nullable=False, default=False)
 
     @classmethod
     def get_overview(cls):
@@ -297,6 +332,45 @@ class PlaceCandidate(Base):
             pc.feature_code = c['fcode']
             pc.complete_data = json.dumps(c, indent=4, separators=(',', ': '))
         return candidates
+
+
+class Observation(Base):
+    __tablename__ = 'tbl_observation'
+    pronounciation_fkey = Column(Integer, ForeignKey('tbl_pronounciation.id', ondelete='CASCADE'),
+                                 primary_key=True, nullable=False)
+    place_of_inquiry_fkey = Column(Integer, ForeignKey('tbl_place_of_inquiry.id'),
+                                   primary_key=True, nullable=False)
+
+    
+class Pronounciation(Base):
+    __tablename__ = 'tbl_pronounciation'
+    id = Column(Integer, primary_key=True)
+    sheet_entry_fkey = Column(Unicode(32), ForeignKey('tbl_sheet_entry.id'), nullable=False)
+    grouping_code = Column(Text) # mostly of the form 1.2.3
+    pronounciation = Column(Text)
+    comment = Column(Text)
+    observations = relationship("PlaceOfInquiry", secondary=Observation.__table__)
+
+    @classmethod
+    def get_by_concept_id(cls, concept_id):
+        return DBSession.query(cls, SheetEntry, Scan) \
+          .join(SheetEntry, Pronounciation.sheet_entry_fkey == SheetEntry.id)\
+          .join(Scan, SheetEntry.scan_fkey == Scan.id)\
+          .filter(Scan.concept_fkey == concept_id)\
+          .order_by(Pronounciation.pronounciation, SheetEntry.id)\
+          .all()
+
+    @classmethod
+    def get_by_scan_prefix(cls, prefix):
+        return DBSession.query(cls, SheetEntry, Scan) \
+          .join(SheetEntry, Pronounciation.sheet_entry_fkey == SheetEntry.id)\
+          .join(Scan, SheetEntry.scan_fkey == Scan.id)\
+          .filter(Scan.scan_name.like(prefix + '%')) \
+          .order_by(Pronounciation.pronounciation, SheetEntry.id)\
+          .all()
+
+
+
 
 class RootFactory(object):
     __acl__ = [

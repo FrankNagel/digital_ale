@@ -1,6 +1,12 @@
 import json
 
+import traceback
+
+import logging
+log = logging.getLogger(__name__)
+
 from pyramid.response import Response
+
 from pyramid.view import view_config
 
 from sqlalchemy.exc import DBAPIError
@@ -12,6 +18,7 @@ from .models import (
     Concept,
     PlaceOfInquiry,
     PlaceCandidate,
+    Pronounciation,
     Scan,
     SheetEntry,
     SheetEntryState,
@@ -29,6 +36,8 @@ from pyramid.security import (
     remember,
     forget,
     )
+
+from sheet_parser import SheetParser
 
 
 @view_config(route_name='home', renderer='templates/overview.mako')
@@ -120,6 +129,58 @@ def concept_view(request):
                 sheetEntries=sheetEntries)
 
 
+@view_config(route_name='concept_data', renderer='templates/concept_data.mako')
+def concept_data_view(request):
+    username = authenticated_userid(request)
+    concept_id = request.matchdict['concept_id']
+    concept = Concept.get_by_id(concept_id)
+    if concept is None:
+        return HTTPNotFound()
+    scans_sheets = SheetEntry.get_scan_entry_by_concept_id(concept_id)
+    places = DBSession.query(PlaceOfInquiry).all()
+    parser = SheetParser(places)
+    for _, sheetEntry in scans_sheets:
+        if sheetEntry:
+            sheetEntry.extract_data(parser)
+    pronounciations = Pronounciation.get_by_concept_id(concept_id)
+    have_messages = True
+    return dict(username=username, concept=concept, scans_sheets=scans_sheets, pronounciations=pronounciations,
+                have_messages=have_messages)
+
+
+@view_config(route_name='sheet_prefix_data', renderer='templates/concept_data.mako')
+def sheet_prefix_data_view(request):
+    username = authenticated_userid(request)
+    sheet_prefix = request.matchdict['sheet_prefix']
+    scans_sheets = SheetEntry.get_scan_entry_by_prefix(sheet_prefix)
+    if not scans_sheets:
+        return HTTPNotFound()
+    places = DBSession.query(PlaceOfInquiry).all()
+    parser = SheetParser(places)
+    for _, sheetEntry in scans_sheets:
+        if sheetEntry:
+            sheetEntry.extract_data(parser)
+    pronounciations = Pronounciation.get_by_scan_prefix(sheet_prefix)
+    have_messages = True
+    return dict(username=username, scans_sheets=scans_sheets, pronounciations=pronounciations,
+                have_messages=have_messages)
+
+
+@view_config(route_name='concept_tsv', renderer='string')
+def concept_tsv_view(request):
+    username = authenticated_userid(request)
+    concept_id = request.matchdict['concept_id']
+    concept = Concept.get_by_id(concept_id)
+    if concept is None:
+        return HTTPNotFound()
+    pronounciations = Pronounciation.get_by_concept_id(concept_id)
+    result = []
+    for p, sheet_entry in pronounciations:
+        for place in p.observations:
+            result.append('%s\t%s\t%s\t%s\n' % (p.pronounciation, place.pointcode_old, concept_id, sheet_entry.id))
+    return ''.join(result)
+    
+
 @view_config(route_name='sheet', renderer='templates/sheet.mako')
 def sheet_view(request):
     username = authenticated_userid(request)
@@ -144,6 +205,10 @@ def sheet_view(request):
         sheetEntry.editor_fkey = user.id
         sheetEntry.data = request.POST.get('data', '')
         sheetEntry.comment = request.POST.get('comment', '')
+        try:
+            sheetEntry.extract_data()
+        except Exception, e:
+            log.warning(traceback.format_exc())
         message = 'Sheet saved.'
     return dict(username=username,
                 message=message,
