@@ -164,6 +164,7 @@ class SheetEntry(Base):
         DBSession.query(Pronounciation).filter(Pronounciation.sheet_entry_fkey == self.id).delete()
         DBSession.flush()
         if self.status == SheetEntryState.ignore:
+            self.parser_messages = ''
             return
         if parser is None:
             places = DBSession.query(PlaceOfInquiry).all()
