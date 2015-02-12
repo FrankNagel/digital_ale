@@ -88,7 +88,7 @@ function parse_information(entry, result) {
 
 function parse_data(entry, result) {
     if (entry === undefined) return;
-    var parts = entry.trim().split(/\n|\r|\r\n/);
+    var parts = entry.split(/\n|\r|\r\n/);
     for (var index = 0; index < parts.length; index++) {
         part = parts[index];
         if (part.trim() === '' || part.trim().toUpperCase() === 'NV') {
