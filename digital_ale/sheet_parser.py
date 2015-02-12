@@ -147,7 +147,6 @@ class SheetParser(object):
                 continue
             p = models.Pronounciation()
             p.sheet_entry_fkey = sheetEntry.id
-            self.result.append(p)
             p.grouping_code = parts[0]
             if not parts[1].strip() and parts[3].strip():
                 if p.pronounciation is None:
@@ -164,7 +163,8 @@ class SheetParser(object):
                 p.observations.extend(self.parse_places(parts[3], (nr, line)))
             except Exception, e:
                 self.messages.extend(['Line %i: %s\n' % (nr, line), 'Exception parsing place numbers: %s\n' % e , '\n'])
-                
+            if p.observations:
+                self.result.append(p)
 
     def parse_places(self, places, parse_context):
         if '@' in places or '?' in places:
