@@ -8,6 +8,7 @@ var SheetDataRow = function() {
     this.transcription = '';
     this.comment = '';
     this.city_codes = '';
+    this.comment2 = ''; // Etymologie, etc
 };
 
 var AleSheet = function() {
@@ -24,7 +25,7 @@ var ParseResult = function() {
 };
 
 function parse_sheet_entry(entry) {
-    var part_re = /\(\s*[1-4]\s*\.\s*[a-zA-Z]+\s*\)/;
+    var part_re = /\(\s*[1-4]\s*\.?\s*[a-zA-Z]+\s*\)/;
     var result_list = [];
     
     entry = entry.trim();
@@ -98,8 +99,8 @@ function parse_data(entry, result) {
         if (columns.length == 3) { //assume comment column missing
             columns.splice(2, 0, '');
         }
-        if (columns.length != 4) {
-            result.errors.push("(3.DATA): Expecting four columns in line " + index + ': ' + part);
+        if (columns.length != 4 && columns.length != 5) {
+            result.errors.push("(3.DATA): Expecting three to five columns in line " + index + ': ' + part);
             result.success = false;
             continue;
         }
@@ -109,6 +110,9 @@ function parse_data(entry, result) {
         row.transcription = columns[1];
         row.comment = columns[2];
         row.city_codes = columns[3];
+        if (columns.length === 5) {
+            row.comment2 = columns[4];
+        }
     }
 }
 
@@ -154,7 +158,6 @@ function render_sheet(sheet, canvas, y_pos) {
     for (var index = 0; index < sheet.data_rows.length; index++) {
         var data_row = sheet.data_rows[index];
         ctx.fillText(data_row.code, 75, y_pos);
-        console.log(ctx.measureText(data_row.code));
         if (ctx.measureText(data_row.code).width > 60) {
             y_pos += line_height;
         }
@@ -164,7 +167,13 @@ function render_sheet(sheet, canvas, y_pos) {
         }
         var y_pos_codes = render_line_wrapped(data_row.city_codes, ctx, 410, 760, y_pos, line_height);
         
-        y_pos = Math.max(y_pos_trans, y_pos_codes) + 10;
+        y_pos = Math.max(y_pos_trans, y_pos_codes);
+
+        if (data_row.comment2 !== '') {
+            y_pos = render_line_wrapped(data_row.comment2, ctx, 140, 760, y_pos, line_height);
+        }
+
+        y_pos += 10;
     }
 
     y_pos += line_height;

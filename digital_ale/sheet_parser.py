@@ -139,9 +139,10 @@ class SheetParser(object):
             parts = line.split('\t')
             if len(parts) == 3:
                 parts.insert(2, '')
-            if len(parts) != 4:
+            if len(parts) not in (4,5):
                 if line.strip().upper() not in  ['NV', 'NL']:
-                    self.messages.extend(['Line %i: %s\n' % (nr, line), 'Expecting 4 TAB separated fields\n' , '\n'])
+                    self.messages.extend(['Line %i: %s\n' % (nr, line),
+                                          'Expecting three to five TAB separated fields (got %i)\n' % len(parts), '\n'])
                 continue
             if parts[1] in u'Øø':
                 continue
