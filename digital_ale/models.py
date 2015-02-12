@@ -163,6 +163,8 @@ class SheetEntry(Base):
     def extract_data(self, parser=None):
         DBSession.query(Pronounciation).filter(Pronounciation.sheet_entry_fkey == self.id).delete()
         DBSession.flush()
+        if self.status == SheetEntryState.ignore:
+            return
         if parser is None:
             places = DBSession.query(PlaceOfInquiry).all()
             parser = SheetParser(places)
