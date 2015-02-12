@@ -349,7 +349,6 @@ def place_candidate_delete(request):
 
 @view_config(route_name='sheet_edit', renderer='json', request_method='POST')
 def sheet_edit(request):
-    print 'edit'
     username = authenticated_userid(request)
     user = User.get_by_username(username)
     if user is None:
