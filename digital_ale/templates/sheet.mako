@@ -16,7 +16,7 @@
 </div>
 </%block>
 
-<form method='post' action='${ req.url }'>
+<form id='edit-form' action='#'>
   <div id='overlay' style="float:left; position: relative; height:1132px;
 			   width:802px; display:inline-block; background-color:#F5F5F5">
     <div id='rendered-view' style="position: absolute; top:150px; left:0; height:1132px; display:inline-block">
@@ -43,10 +43,8 @@
     <option value="${o}" ${ selected }>${o}</option>
 % endfor
     </select>
-    <input type="submit" name="submit" value='Save' />
-% if message:
-    ${ message }
-% endif
+    <input type="submit" name="submit" id='submit' value='Save' />
+    <span id='message'></span>
     <br>
     <textarea id='sheet_text' name='data' style="margin-top:10px; height:66%;
     width:600px" spellcheck='false'></textarea>
@@ -64,6 +62,8 @@ else:
     innerHtml = ''
 %>
 <script type="text/javascript">
+  var concept_id = '${scan.concept_fkey}';
+  var scan_name = '${scan.scan_name}';
   $(document).ready(function(){
     document.getElementById('sheet_text').innerHTML = '${ innerHtml | n }';
     refresh_canvas();

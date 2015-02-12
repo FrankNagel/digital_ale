@@ -283,6 +283,28 @@ function refresh_canvas() {
     render_sheet_list(parse_result_list, document.getElementById('canvas'));
 }
 
+function save_sheet() {
+    $('#submit').attr('disabled', true);
+    $.ajax('/api/sheet/' + concept_id + '/' + scan_name + '/edit', {
+        type: 'POST',
+        data: $('#edit-form').serialize(),
+        context: document.body
+    }).done(function(data, textStatus, jqXHR) {
+        $('#submit').attr('disabled', false);
+        var message = document.getElementById('message');
+        message.innerHTML = 'Sheet Saved';
+        message.style.display = 'inline';
+        $(message).fadeOut({duration: 2000});
+    }).fail(function(jqXHR, textStatus, errorThrown) {
+        $('#submit').attr('disabled', false);
+        var message = document.getElementById('message');
+        message.innerHTML = 'Saving failed';
+        message.style.display = 'inline';
+        alert('The request failed. Reason given: "' + errorThrown + '"' );
+    });
+
+}
+
 $(function() {
     $("#slider-vertical").slider({
         orientation: "vertical",
@@ -319,7 +341,14 @@ $(function() {
                 $(this).get(0).selectionEnd = start + 1;
         }
     });
+
     $('#rotate').click(function() {
         $('#ale-scan-bg').toggleClass('rotated');
     });
+
+    $('#edit-form').on('submit', function(event) {
+            event.preventDefault();
+            save_sheet();
+        });
+
 });

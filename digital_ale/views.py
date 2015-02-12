@@ -186,32 +186,11 @@ def sheet_view(request):
     username = authenticated_userid(request)
     concept_id = request.matchdict['concept_id']
     scan_name = request.matchdict['scan_name']
-    message = ''
     scan = Scan.get_by_concept_name(concept_id, scan_name)
     if scan is None:
         return HTTPNotFound()
-    sheetEntry = SheetEntry.get_by_scan_id(scan.id)
-    if 'submit' in request.POST:
-        user = User.get_by_username(username)
-        if user is None:
-            return HTTPUnauthorized("Please log in to save changes.")
-        if sheetEntry is None:
-            sheetEntry = SheetEntry(scan.concept_fkey, scan.scan_name, scan.id, '')
-            DBSession.add(sheetEntry)
-        new_status = request.POST.get('status', '')
-        if new_status not in SheetEntryState:
-            return HTTPBadRequest("Invalid status code")
-        sheetEntry.status = new_status
-        sheetEntry.editor_fkey = user.id
-        sheetEntry.data = request.POST.get('data', '')
-        sheetEntry.comment = request.POST.get('comment', '')
-        try:
-            sheetEntry.extract_data()
-        except Exception, e:
-            log.warning(traceback.format_exc())
-        message = 'Sheet saved.'
+    sheetEntry = SheetEntry.get_by_scan_id(scan.id) # may be None
     return dict(username=username,
-                message=message,
                 scan=scan,
                 sheetEntry=sheetEntry,
                 sheetEntryState=SheetEntryState)
@@ -222,6 +201,7 @@ def places_view(request):
     username = authenticated_userid(request)
     places = PlaceOfInquiry.get_overview()
     return dict(places=places, username=username)
+
 
 @view_config(route_name='places_all', renderer='templates/places_all.mako')
 def places_all_view(request):
@@ -248,6 +228,7 @@ def place_candidates_view(request):
     for c in candidates:
         c['selected'] = c['lat'] == place.lat and c['lng'] == place.lng
     return dict(status='OK', candidates=candidates)
+
 
 coord_parser = lambda x: x and float(x) or None
 coord_parser.__name__ = '<float>|null'
@@ -363,3 +344,39 @@ def place_candidate_delete(request):
     if place.lat == candidate.lat and place.lng == candidate.lng:
         place.lat = place.lng = None
         place.coordinates_validated = False
+    return dict(status='OK')
+
+
+@view_config(route_name='sheet_edit', renderer='json', request_method='POST')
+def sheet_edit(request):
+    print 'edit'
+    username = authenticated_userid(request)
+    user = User.get_by_username(username)
+    if user is None:
+        request.response.status_code = 401
+        return dict(status=401)
+    concept_id = request.matchdict['concept_id']
+    scan_name = request.matchdict['scan_name']
+    message = ''
+    scan = Scan.get_by_concept_name(concept_id, scan_name)
+    if scan is None:
+        request.response.status_code = 404
+        return dict(status=404)
+    sheetEntry = SheetEntry.get_by_scan_id(scan.id)
+    if sheetEntry is None:
+        sheetEntry = SheetEntry(scan.concept_fkey, scan.scan_name, scan.id, '')
+        DBSession.add(sheetEntry)
+        
+    new_status = request.POST.get('status', '')
+    if new_status not in SheetEntryState:
+        request.response.status_code = 401
+        return dict(status=401, reason="Invalid status code")
+    sheetEntry.status = new_status
+    sheetEntry.editor_fkey = user.id
+    sheetEntry.data = request.POST.get('data', '')
+    sheetEntry.comment = request.POST.get('comment', '')
+    try:
+        sheetEntry.extract_data()
+    except Exception, e:
+        log.warning(traceback.format_exc())
+    return dict(status='OK')

@@ -56,6 +56,7 @@ def main(global_config, **settings):
     config.add_route('place_edit', '/api/place/{place_id}/edit')
     config.add_route('place_candidate_add', '/api/place_candidate/add')
     config.add_route('place_candidate', '/api/place_candidate/{candidate_id}')
-    
+    config.add_route('sheet_edit', '/api/sheet/{concept_id}/{scan_name}/edit')
+
     config.scan()
     return config.make_wsgi_app()
