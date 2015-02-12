@@ -285,6 +285,8 @@ function refresh_canvas() {
 
 function save_sheet() {
     $('#submit').attr('disabled', true);
+    message.innerHTML = 'Saving...';
+    message.style.display = 'inline';
     $.ajax('/api/sheet/' + concept_id + '/' + scan_name + '/edit', {
         type: 'POST',
         data: $('#edit-form').serialize(),
@@ -293,13 +295,11 @@ function save_sheet() {
         $('#submit').attr('disabled', false);
         var message = document.getElementById('message');
         message.innerHTML = 'Sheet Saved';
-        message.style.display = 'inline';
         $(message).fadeOut({duration: 2000});
     }).fail(function(jqXHR, textStatus, errorThrown) {
         $('#submit').attr('disabled', false);
         var message = document.getElementById('message');
         message.innerHTML = 'Saving failed';
-        message.style.display = 'inline';
         alert('The request failed. Reason given: "' + errorThrown + '"' );
     });
 
