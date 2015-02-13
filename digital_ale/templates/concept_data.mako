@@ -16,6 +16,9 @@
 % if concept:
 <h2>Concept ${concept.id}</h2>
 % endif
+<form method='POST'>
+  <input type='submit' name='recompute' value='Recompute' </input>
+</form>
 % if have_messages:
 <h3>Parser Messages</h3>
 % for scan, sheet in scans_sheets:

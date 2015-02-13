@@ -136,12 +136,13 @@ def concept_data_view(request):
     concept = Concept.get_by_id(concept_id)
     if concept is None:
         return HTTPNotFound()
-    scans_sheets = SheetEntry.get_scan_entry_by_concept_id(concept_id)
-    places = DBSession.query(PlaceOfInquiry).all()
-    parser = SheetParser(places)
-    for _, sheetEntry in scans_sheets:
-        if sheetEntry:
-            sheetEntry.extract_data(parser)
+    if 'recompute' in request.POST:
+        scans_sheets = SheetEntry.get_scan_entry_by_concept_id(concept_id)
+        places = DBSession.query(PlaceOfInquiry).all()
+        parser = SheetParser(places)
+        for _, sheetEntry in scans_sheets:
+            if sheetEntry:
+                sheetEntry.extract_data(parser)
     pronounciations = Pronounciation.get_by_concept_id(concept_id)
     have_messages = True
     return dict(username=username, concept=concept, scans_sheets=scans_sheets, pronounciations=pronounciations,
@@ -155,11 +156,12 @@ def sheet_prefix_data_view(request):
     scans_sheets = SheetEntry.get_scan_entry_by_prefix(sheet_prefix)
     if not scans_sheets:
         return HTTPNotFound()
-    places = DBSession.query(PlaceOfInquiry).all()
-    parser = SheetParser(places)
-    for _, sheetEntry in scans_sheets:
-        if sheetEntry:
-            sheetEntry.extract_data(parser)
+    if 'recompute' in request.POST:
+        places = DBSession.query(PlaceOfInquiry).all()
+        parser = SheetParser(places)
+        for _, sheetEntry in scans_sheets:
+            if sheetEntry:
+                sheetEntry.extract_data(parser)
     pronounciations = Pronounciation.get_by_scan_prefix(sheet_prefix)
     have_messages = True
     return dict(username=username, scans_sheets=scans_sheets, pronounciations=pronounciations,
