@@ -136,8 +136,8 @@ def concept_data_view(request):
     concept = Concept.get_by_id(concept_id)
     if concept is None:
         return HTTPNotFound()
+    scans_sheets = SheetEntry.get_scan_entry_by_concept_id(concept_id)
     if 'recompute' in request.POST:
-        scans_sheets = SheetEntry.get_scan_entry_by_concept_id(concept_id)
         places = DBSession.query(PlaceOfInquiry).all()
         parser = SheetParser(places)
         for _, sheetEntry in scans_sheets:
