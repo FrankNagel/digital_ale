@@ -214,7 +214,7 @@ class SheetParser(object):
                         have_range = False
                     else:
                         result_numbers.append((n, underline, False))
-                if places[index] == '-':
+                if places[index] == '-' and result_numbers:
                     have_range = True
                 index += 1
 
