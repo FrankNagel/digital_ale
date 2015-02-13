@@ -230,8 +230,8 @@ var UnderlineRenderer = function(ctx) {
                     this.tmp_end = offset + this.ctx.measureText(tail).width;
                 } else {
                     this.regions.push(this.start);
-                    this.regions.push(offset + this.ctx.measureText(word.slice(0, index)).width);
-                    offset = this.start;
+                    offset = offset + this.ctx.measureText(word.slice(0, index)).width;
+                    this.regions.push(offset);
                     this.start = undefined;
                 }
                 word = tail;
