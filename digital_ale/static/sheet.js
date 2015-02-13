@@ -170,7 +170,7 @@ function render_sheet(sheet, canvas, y_pos) {
         y_pos = Math.max(y_pos_trans, y_pos_codes);
 
         if (data_row.comment2 !== '') {
-            y_pos = render_line_wrapped(data_row.comment2, ctx, 140, 760, y_pos, line_height);
+            y_pos = render_line_wrapped(data_row.comment2, ctx, 200, 760, y_pos, line_height);
         }
 
         y_pos += 10;
