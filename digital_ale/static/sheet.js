@@ -121,7 +121,7 @@ function parse_comment(entry, result) {
     result.sheet.comment_lines = entry.trim().split(/\n|\r|\r\n/);
 }
 
-function render_sheet_list(result_list, canvas) {
+function render_sheet_list(result_list, canvas, recursive) {
     var ystart = 70;
 
     canvas.getContext('2d').clearRect(0, 0, canvas.width, canvas.height);
@@ -132,6 +132,11 @@ function render_sheet_list(result_list, canvas) {
         } else {
             alert(parse_result.errors);
         }
+    }
+    if (recursive === undefined && ystart > canvas.height) {
+        canvas.style.height = ystart + 'px';
+        canvas.height = ystart;
+        render_sheet_list(result_list, canvas, true);
     }
 }
 
