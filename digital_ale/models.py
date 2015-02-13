@@ -102,7 +102,7 @@ class User(Base):
 class Scan(Base):
     __tablename__ = 'tbl_scan'
     id = Column(Integer, primary_key=True)
-    concept_fkey = Column(Integer, ForeignKey('tbl_concept.id'))
+    concept_fkey = Column(Integer, ForeignKey('tbl_concept.id'), index=True)
     scan_name = Column(Unicode(256))
     uploader_fkey = Column(Integer, ForeignKey('tbl_user.id'))
     modification_date = Column(DateTime, DefaultClause(text('now()')))
@@ -340,15 +340,15 @@ class PlaceCandidate(Base):
 class Observation(Base):
     __tablename__ = 'tbl_observation'
     pronounciation_fkey = Column(Integer, ForeignKey('tbl_pronounciation.id', ondelete='CASCADE'),
-                                 primary_key=True, nullable=False)
+                                 primary_key=True, nullable=False, index=True)
     place_of_inquiry_fkey = Column(Integer, ForeignKey('tbl_place_of_inquiry.id'),
-                                   primary_key=True, nullable=False)
+                                   primary_key=True, nullable=False, index=True)
 
     
 class Pronounciation(Base):
     __tablename__ = 'tbl_pronounciation'
     id = Column(Integer, primary_key=True)
-    sheet_entry_fkey = Column(Unicode(32), ForeignKey('tbl_sheet_entry.id'), nullable=False)
+    sheet_entry_fkey = Column(Unicode(32), ForeignKey('tbl_sheet_entry.id'), nullable=False, index=True)
     grouping_code = Column(Text) # mostly of the form 1.2.3
     pronounciation = Column(Text)
     comment = Column(Text)
