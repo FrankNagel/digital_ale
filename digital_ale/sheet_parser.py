@@ -90,10 +90,7 @@ class SheetParser(object):
             elif state == 1:
                 if match and match.group(2).upper() == 'DATA':
                     state = 0
-                    if self.context == '14.7':
-                        self.parse_data_14_7(lines, sheetEntry)
-                    else:
-                        self.parse_data(lines, sheetEntry)
+                    self.parse_data(lines, sheetEntry)
         sheetEntry.parser_messages = ''.join(self.messages)
         return self.result
 
@@ -132,41 +129,6 @@ class SheetParser(object):
                 return
             lines.next()
 
-    def parse_data_14_7(self, lines, sheetEntry):
-        """Special case: DATA rows have the form 'place_code TAB pronounciation'."""
-        while True:
-            nr, line = lines.peek()
-            if not line or self.part_regex.match(line):
-                return
-            lines.next()
-            parts = line.split('\t')
-            if len(parts) < 2:
-                if line.strip().upper() not in  ['NV', 'NL']:
-                    self.messages.extend(['Line %i: %s\n' % (nr, line),
-                                          'Expecting two TAB separated fields (got %i)\n' % len(parts), '\n'])
-                continue
-            if parts[1] in u'Øø':
-                continue
-            p = models.Pronounciation()
-            p.sheet_entry_fkey = sheetEntry.id
-            p.grouping_code = ''
-            if not parts[1].strip() and parts[0].strip():
-                if p.pronounciation is None:
-                    p.pronounciation = ''
-                self.messages.extend(['Line %i: %s\n' % (nr, line), 'Warning: Empty pronounciation field. Keeping previous value: %s\n' %  p.pronounciation, '\n'])
-            else:
-                p.pronounciation = unescape(parts[1])
-            if '@' in p.pronounciation or '?' in p.pronounciation:
-                self.messages.extend(['Line %i: %s\n' % (nr, line),
-                                      'Unexpected character (@ or ?) in pronounciation "%s"\n' % p.pronounciation,
-                                      '\n'])
-            try:
-                p.observations.extend(self.parse_places(parts[0], (nr, line)))
-            except Exception, e:
-                self.messages.extend(['Line %i: %s\n' % (nr, line), 'Exception parsing place numbers: %s\n' % e , '\n'])
-            if p.observations:
-                self.result.append(p)
-
 
     def parse_data(self, lines, sheetEntry):
         while True:
@@ -175,6 +137,11 @@ class SheetParser(object):
                 return
             lines.next()
             parts = line.split('\t')
+            if self.context == '14.7' and parts[0] in ['601', '701', '702']:
+                parts.insert(2, parts[0])
+                parts[0] = ''
+                self.messages.extend(['Line %i: %s\n' % (nr, line),
+                                      'Interpreting first field as place code.\n', '\n'])
             if len(parts) == 3:
                 parts.insert(2, '')
             if len(parts) not in (4,5):
@@ -204,6 +171,7 @@ class SheetParser(object):
                 self.messages.extend(['Line %i: %s\n' % (nr, line), 'Exception parsing place numbers: %s\n' % e , '\n'])
             if p.observations:
                 self.result.append(p)
+
 
     def parse_places(self, places, parse_context):
         if '@' in places or '?' in places:
