@@ -148,6 +148,14 @@ def concept_data_view(request):
     return dict(username=username, concept=concept, scans_sheets=scans_sheets, pronounciations=pronounciations,
                 have_messages=have_messages)
 
+@view_config(route_name='sheet_prefix', renderer='templates/sheet_by_prefix.mako')
+def sheet_prefix_view(request):
+    username = authenticated_userid(request)
+    sheet_prefix = request.matchdict['sheet_prefix']
+    scans_sheets = SheetEntry.get_scan_entry_by_prefix(sheet_prefix)
+    if not scans_sheets:
+        return HTTPNotFound()
+    return dict(username=username, scans_sheets=scans_sheets, sheet_prefix=sheet_prefix)
 
 @view_config(route_name='sheet_prefix_data', renderer='templates/concept_data.mako')
 def sheet_prefix_data_view(request):
