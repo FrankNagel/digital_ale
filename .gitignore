@@ -3,6 +3,7 @@ production.ini
 alembic.ini
 digital_ale.egg-info
 digital_ale/static/scans
+digital_ale/static/CharisSIL-R.ttf
 
 #general stuff
 *.log

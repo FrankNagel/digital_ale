@@ -1,3 +1,8 @@
+@font-face {
+    font-family: Charis SIL;
+    src: url(/static/CharisSIL-R.ttf);
+}
+
 body {
     margin: 0;
     margin-bottom: 2ex;
@@ -97,6 +102,11 @@ div.rotated {
     -ms-transform: rotate(180deg);
     -o-transform: rotate(180deg);
     transform: rotate(180deg);
+}
+
+textarea.sheet-text {
+    font-family:Charis SIL;
+    font-size:12pt;
 }
 
 /* overview of places of inquiry */
