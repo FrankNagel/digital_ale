@@ -1,10 +1,83 @@
 # -*- coding: utf-8 -*-
 
 import re
+import logging
+import unicodedata
 import HTMLParser
 import models
 
+log = logging.getLogger(__name__)
+
 unescape = HTMLParser.HTMLParser().unescape
+
+
+def initial_clean_up(data):
+    if type(data) != unicode:
+        data = unicode(data, 'utf8')
+    result = []
+    state = 0
+    regex = re.compile(r'\s*\(\s*(\d)\.?\s*([^\W\d_]+)\)\s*')
+    of_regex = re.compile(r'\s*[[(]?\s*(?:[oO]\.\s*[fF]\.|[fF]\.\s*[oO]\.)') # 'original form' artefacts
+    for line in data.splitlines():
+        if state == 0:
+            match = regex.match(line)
+            if match and match.group(2).upper() == 'DATA':
+                state = 1
+            result.append(line)
+        elif state == 1:
+            if not line.strip() or line.strip().upper() in  ['NV', 'NL']:
+                result.append(line)
+                continue
+            match = regex.match(line)
+            if match:
+                state = 0
+                result.append(line)
+            else:
+                parts = line.split('\t')
+                if len(parts) < 4:
+                    parts.insert(2, '')
+                if len(parts) < 4:
+                    log.warn('Ignoring inconsistent line\n\t' + line)
+                    result.append(line)
+                    continue
+                pron = parts[1]
+                of_match = of_regex.search(pron)
+                if of_match:
+                    parts[1] = pron[:of_match.start()]
+                    parts[2] = pron[of_match.start():].lstrip() + parts[2]
+                    log.info('shifting right: "%s"' % pron[of_match.start():])
+                parts[1] = clean_up_underline(parts[1])
+                result.append('\t'.join(parts))
+        else:
+            break
+    return '\n'.join(result)
+
+
+def clean_up_underline(data):
+    underline_regex = re.compile('<u>(.*?)</u>')
+    start = 0
+    while True:
+        match = underline_regex.search(data, start)
+        if not match:
+            break
+        graphemes = build_graphemes(match.group(1))
+        if len(graphemes) == 2:
+            old_data = data
+            data = data[:match.start()] + graphemes[0] + unichr(0x035f) + graphemes[1] + data[match.end():]
+            log.info('replacing "%s" with "%s"' % (old_data, data))
+        start = match.start() + 1
+    return data
+
+def build_graphemes(data):
+    result = []
+    for x in data:
+        if unicodedata.combining(x):
+            if not result:
+                result.append([])
+            result[-1].append(x)
+        else:
+            result.append([x])
+    return [u''.join(x) for x in result]
 
 class LineIterator():
     def __init__(self, text):

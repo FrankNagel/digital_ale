@@ -1,4 +1,5 @@
 import os.path
+import re
 from collections import namedtuple
 import json
 from sqlalchemy import (
@@ -47,7 +48,7 @@ from zope.sqlalchemy import ZopeTransactionExtension
 
 import cryptacular.bcrypt
 
-from sheet_parser import SheetParser
+from sheet_parser import SheetParser, initial_clean_up
 
 
 crypt = cryptacular.bcrypt.BCRYPTPasswordManager()
@@ -153,7 +154,7 @@ class SheetEntry(Base):
         self.scan_fkey = scan_fkey
         self.editor_fkey = None
         self.modification_date = None
-        self.data = data
+        self.data = initial_clean_up(self.replace_escape_sequences(data))
 
         self.comment = ''
 
@@ -174,6 +175,17 @@ class SheetEntry(Base):
             DBSession.add(p)
         DBSession.flush()
 
+    @staticmethod
+    def replace_escape_sequences(data):
+        regex = re.compile('&([0-9]+);')
+        while True:
+            match = regex.search(data)
+            if not match:
+                break
+            c = unichr(int(match.group(1), 16))
+            data = data.replace(match.group(), c)
+        return data
+                
     @classmethod
     def get_by_scan_id(cls, scan_id):
         return DBSession.query(SheetEntry).filter(SheetEntry.scan_fkey == scan_id).first()
@@ -323,6 +335,8 @@ class PlaceCandidate(Base):
     @staticmethod
     def parse_response_geonames(payload):
         """Extract PlaceCandidates from a HTTP request to http://api.geonames.org/search."""
+        if payload['totalResultsCount'] == 0:
+            return []
         candidates = []
         for c in payload['geonames']:
             pc = PlaceCandidate()
@@ -332,7 +346,7 @@ class PlaceCandidate(Base):
             pc.lng = float(c['lng'])
             pc.country_code = c['countryCode']
             pc.source = CandidateSource.geonames
-            pc.feature_code = c['fcode']
+            pc.feature_code = c.get('fcode', '')
             pc.complete_data = json.dumps(c, indent=4, separators=(',', ': '))
         return candidates
 
