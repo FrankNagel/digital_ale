@@ -231,26 +231,34 @@ class SheetParser(object):
                 continue
             if parts[1] in u'Øø':
                 continue
-            p = models.Pronounciation()
-            p.sheet_entry_fkey = sheetEntry.id
-            p.grouping_code = parts[0]
             if not parts[1].strip() and parts[3].strip():
-                if p.pronounciation is None:
-                    p.pronounciation = ''
-                self.messages.extend(['Line %i: %s\n' % (nr, line), 'Warning: Empty pronounciation field. Keeping previous value: %s\n' %  p.pronounciation, '\n'])
+                pronounciation = ''
+                self.messages.extend(['Line %i: %s\n' % (nr, line), 'Warning: Empty pronounciation field.\n\n'])
             else:
-                p.pronounciation = unescape(parts[1])
-            if '@' in p.pronounciation or '?' in p.pronounciation:
+                pronounciation = unescape(parts[1])
+            if '@' in pronounciation or '?' in pronounciation:
                 self.messages.extend(['Line %i: %s\n' % (nr, line),
-                                      'Unexpected character (@ or ?) in pronounciation "%s"\n' % p.pronounciation,
+                                      'Unexpected character (@ or ?) in pronounciation "%s"\n' % pronounciation,
                                       '\n'])
-            p.comment = parts[2]
             try:
-                p.observations.extend(self.parse_places(parts[3], (nr, line)))
+                observations = self.parse_places(parts[3], (nr, line))
             except Exception, e:
+                observations = []
                 self.messages.extend(['Line %i: %s\n' % (nr, line), 'Exception parsing place numbers: %s\n' % e , '\n'])
-            if p.observations:
-                self.result.append(p)
+            
+            if observations:
+                pron_parts = pronounciation.split(',')
+                for p in pron_parts:
+                    p = p.strip()
+                    if not p:
+                        continue
+                    pron = models.Pronounciation()
+                    pron.sheet_entry_fkey = sheetEntry.id
+                    pron.grouping_code = parts[0]
+                    pron.pronounciation = p
+                    pron.comment = parts[2]
+                    pron.observations.extend(observations)
+                    self.result.append(pron)
 
 
     def parse_places(self, places, parse_context):
