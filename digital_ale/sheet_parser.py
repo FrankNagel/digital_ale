@@ -217,11 +217,6 @@ class SheetParser(object):
                 return
             lines.next()
             parts = line.split('\t')
-            if self.context == '14.7' and parts[0] in ['601', '701', '702']:
-                parts.insert(2, parts[0])
-                parts[0] = ''
-                self.messages.extend(['Line %i: %s\n' % (nr, line),
-                                      'Interpreting first field as place code.\n', '\n'])
             if len(parts) == 3:
                 parts.insert(2, '')
             if len(parts) not in (4,5):
@@ -229,6 +224,11 @@ class SheetParser(object):
                     self.messages.extend(['Line %i: %s\n' % (nr, line),
                                           'Expecting three to five TAB separated fields (got %i)\n' % len(parts), '\n'])
                 continue
+            if self.context == '14.7' and parts[3] == '' and parts[0].strip() in ['601', '701', '702']:
+                parts[3] = parts[0]
+                parts[0] = ''
+                self.messages.extend(['Line %i: %s\n' % (nr, line),
+                                      'Interpreting first field as place code.\n', '\n'])
             if parts[1] in u'Øø':
                 continue
             if not parts[1].strip() and parts[3].strip():
