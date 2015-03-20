@@ -8,6 +8,7 @@ digital_ale/static/CharisSIL-R.ttf
 #general stuff
 *.log
 *.bak
+*.swp
 *~
 
 #python specific
