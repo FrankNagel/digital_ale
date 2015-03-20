@@ -224,25 +224,25 @@ var UnderlineRenderer = function(ctx) {
         var offset = this.ctx.measureText(line).width;
         while (true) {
             pattern = this.start === undefined && /<u\s*>/ || /<\/u\s*>/ ;
-            var index = word.search(pattern);
-            if (index !== -1) {
-                tail = word.slice(index);
-                index2 = tail.search('>');
-                tail = tail.slice(index2+1);
-                if (this.start === undefined) {
-                    this.start = offset + this.ctx.measureText(word.slice(0, index)).width;
-                    offset = this.start;
-                    this.tmp_end = offset + this.ctx.measureText(tail).width;
-                } else {
-                    this.regions.push(this.start);
-                    offset = offset + this.ctx.measureText(word.slice(0, index)).width;
-                    this.regions.push(offset);
-                    this.start = undefined;
-                }
-                word = tail;
-            } else {
+            var index = word.search(pattern);       
+            if (index === -1) {
+                this.tmp_end = offset + this.ctx.measureText(word).width;
                 break;
             }
+            tail = word.slice(index);
+            index2 = tail.search('>');
+            tail = tail.slice(index2+1);
+            if (this.start === undefined) {
+                this.start = offset + this.ctx.measureText(word.slice(0, index)).width;
+                offset = this.start;
+                this.tmp_end = offset + this.ctx.measureText(tail).width;
+            } else {
+                this.regions.push(this.start);
+                offset = offset + this.ctx.measureText(word.slice(0, index)).width;
+                this.regions.push(offset);
+                this.start = undefined;
+            }
+            word = tail;
         }
     };
 
