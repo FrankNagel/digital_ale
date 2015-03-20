@@ -54,6 +54,12 @@
     </p>
   </div>
 </form>
+
+<div id="renderer_error_dialog" title="Renderer Errors " style="display: none;width:80ex;height:40ex">
+<pre id="renderer_errors">
+</pre>
+</div>
+
 <%block name="js_footer">
 <%
 if sheetEntry:

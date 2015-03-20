@@ -74,7 +74,7 @@ function parse_ident(entry, result) {
     var parts = entry.trim().split(/\n|\r|\r\n/);
     if (parts.length !== 2) {
         result.errors.push("(1.IDENT): Expecting two entries in separate lines. Found " + parts.length + 
-                           " lines with entries.");
+                           " line(s) with entries.");
         result.success = false;
         return;
     }
@@ -100,7 +100,8 @@ function parse_data(entry, result) {
             columns.splice(2, 0, '');
         }
         if (columns.length != 4 && columns.length != 5) {
-            result.errors.push("(3.DATA): Expecting three to five columns in line " + index + ': ' + part);
+            result.errors.push("(3.DATA): Expecting three to five columns (got " + columns.length + ') in line ' +
+                               index + ':\n\t' + part);
             result.success = false;
             continue;
         }
@@ -130,7 +131,11 @@ function render_sheet_list(result_list, canvas, recursive) {
         if (parse_result.success) {
             ystart = render_sheet(parse_result.sheet, canvas, ystart);
         } else {
-            alert(parse_result.errors);
+            $('#renderer_errors').html(parse_result.errors.join('\n\n'));
+            $('#renderer_error_dialog').dialog({
+                width: 800,
+                height: 250
+            });
         }
     }
     if (recursive === undefined && ystart > canvas.height) {
