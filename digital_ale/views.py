@@ -143,6 +143,7 @@ def concept_data_view(request):
         for _, sheetEntry in scans_sheets:
             if sheetEntry:
                 sheetEntry.extract_data(parser)
+        return HTTPFound(request.url)
     pronounciations = Pronounciation.get_by_concept_id(concept_id)
     have_messages = True
     return dict(username=username, concept=concept, scans_sheets=scans_sheets, pronounciations=pronounciations,
@@ -170,6 +171,7 @@ def sheet_prefix_data_view(request):
         for _, sheetEntry in scans_sheets:
             if sheetEntry:
                 sheetEntry.extract_data(parser)
+        return HTTPFound(request.url)
     pronounciations = Pronounciation.get_by_scan_prefix(sheet_prefix)
     have_messages = True
     return dict(username=username, scans_sheets=scans_sheets, pronounciations=pronounciations,
