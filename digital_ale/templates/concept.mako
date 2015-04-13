@@ -17,7 +17,8 @@
 <p><b>eng</b> ${concept.eng}<br><b>fra</b> ${concept.fra}</p>
 <p>
   <a href='${request.route_url('concept_data', concept_id=concept.id)}'>Extracted Data</a><br>
-  <a href='${request.route_url('concept_tsv', concept_id=concept.id)}'>Extracted Data as TSV</a><br>
+  <a href='${request.route_url('concept_tsv', concept_id=concept.id)}'>Extracted Data as TSV</a>
+  (<a href='${request.route_url('concept_tsv', concept_id=concept.id, _query={'terse':'yes'})}'>Terse Version</a>)<br>
 </p>
 
 <h3>Scans</h3>

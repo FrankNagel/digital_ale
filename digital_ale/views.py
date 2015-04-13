@@ -185,11 +185,17 @@ def concept_tsv_view(request):
     concept = Concept.get_by_id(concept_id)
     if concept is None:
         return HTTPNotFound()
+    terse = request.params.has_key('terse') and request.params.get('terse').lower() in ['yes', 'true', '1']
     pronounciations = Pronounciation.get_by_concept_id(concept_id)
     result = []
     for p, sheet_entry, scan in pronounciations:
-        for place in p.observations:
-            result.append('%s\t%s\t%s\t%s\n' % (p.pronounciation, place.pointcode_old, concept_id, sheet_entry.id))
+        if terse:
+            result.append('%s\t%s\t%s\t%s\n' % (p.pronounciation,
+                                                ','.join(place.pointcode_old for place in p.observations),
+                                                concept_id, sheet_entry.id))
+        else:
+            for place in p.observations:
+                result.append('%s\t%s\t%s\t%s\n' % (p.pronounciation, place.pointcode_old, concept_id, sheet_entry.id))
     return ''.join(result)
     
 
