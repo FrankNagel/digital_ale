@@ -241,9 +241,10 @@ class SheetParser(object):
                 parts[0] = ''
                 self.messages.extend(['Line %i: %s\n' % (nr, line),
                                       'Interpreting first field as place code.\n', '\n'])
-            if parts[1] in u'Øø':
+            parts[1] = parts[1].strip()
+            if parts[1] in (u'Ø', u'ø'):
                 continue
-            if not parts[1].strip() and parts[3].strip():
+            if not parts[1] and parts[3].strip():
                 pronounciation = ''
                 self.messages.extend(['Line %i: %s\n' % (nr, line), 'Warning: Empty pronounciation field.\n\n'])
             else:
