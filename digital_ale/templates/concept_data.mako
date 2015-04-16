@@ -17,13 +17,13 @@
 <h2>Concept ${concept.id}</h2>
 % endif
 <form method='POST'>
-  <input type='submit' name='recompute' value='Recompute' </input>
+  <input type='submit' name='recompute' value='Recompute' />
 </form>
 % if have_messages:
 <h3>Parser Messages</h3>
 % for scan, sheet in scans_sheets:
 % if sheet and sheet.parser_messages:
-<a href='${request.route_url('sheet', concept_id=scan.concept_fkey, scan_name=scan.scan_name)}''>Sheet ${ '%i/%s' % (scan.concept_fkey, scan.scan_name) } </a>
+<a href='${request.route_url('sheet', concept_id=scan.concept_fkey, scan_name=scan.scan_name)}'>Sheet ${ '%i/%s' % (scan.concept_fkey, scan.scan_name) } </a>
 <pre>
 ${sheet.parser_messages}
 </pre>
@@ -48,7 +48,7 @@ ${sheet.parser_messages}
 ${place.pointcode_old}
 % endfor
 </td>
-    <td><a href='${request.route_url('sheet', concept_id=scan.concept_fkey, scan_name=scan.scan_name)}''>${ '%03i/%s' % (scan.concept_fkey, scan.scan_name) }</a></td>
+    <td><a href='${request.route_url('sheet', concept_id=scan.concept_fkey, scan_name=scan.scan_name)}'>${ '%03i/%s' % (scan.concept_fkey, scan.scan_name) }</a></td>
   </tr>
 % endfor
 </tbody>
