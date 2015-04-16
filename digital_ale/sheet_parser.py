@@ -263,7 +263,7 @@ class SheetParser(object):
                 for p in pron_parts:
                     p = p.strip()
                     if not p:
-                        continue
+                        p = 'Not Available'
                     pron = models.Pronounciation()
                     pron.sheet_entry_fkey = sheetEntry.id
                     pron.grouping_code = parts[0]
