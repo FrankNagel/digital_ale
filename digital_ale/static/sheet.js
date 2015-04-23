@@ -130,6 +130,7 @@ function render_sheet_list(result_list, canvas, recursive) {
         var parse_result = result_list[i];
         if (parse_result.success) {
             ystart = render_sheet(parse_result.sheet, canvas, ystart);
+            $('#renderer_error_dialog').dialog( 'close');
         } else {
             $('#renderer_errors').html(parse_result.errors.join('\n\n'));
             $('#renderer_error_dialog').dialog({
