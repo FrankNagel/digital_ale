@@ -9,6 +9,7 @@ from sqlalchemy import (
     and_,
     event,
     ForeignKey,
+    func,
     Index,
     Integer,
     Float,
@@ -137,6 +138,7 @@ class SheetEntry(Base):
     scan_fkey = Column(Integer, ForeignKey('tbl_scan.id'), index=True)
     editor_fkey = Column(Integer, ForeignKey('tbl_user.id'))
     modification_date = Column(DateTime, DefaultClause(text('now()')))
+    extraction_date = Column(DateTime)
     data = Column(Unicode())
     status = Column(Enum(*SheetEntryState, name='sheetEntryState'))
     comment = Column(Unicode())
@@ -154,6 +156,7 @@ class SheetEntry(Base):
         self.scan_fkey = scan_fkey
         self.editor_fkey = None
         self.modification_date = None
+        self.extraction_date = None
         self.data = initial_clean_up(self.replace_escape_sequences(data))
 
         self.comment = ''
@@ -164,6 +167,7 @@ class SheetEntry(Base):
     def extract_data(self, parser=None):
         DBSession.query(Pronounciation).filter(Pronounciation.sheet_entry_fkey == self.id).delete()
         DBSession.flush()
+        self.extraction_date = func.now()
         if self.status == SheetEntryState.ignore:
             self.parser_messages = ''
             return
@@ -173,7 +177,9 @@ class SheetEntry(Base):
         pronounciations = parser.parse(self)
         for p in pronounciations:
             DBSession.add(p)
-        DBSession.flush()
+        DBSession.flush(pronounciations)
+        for p in pronounciations:
+            DBSession.expunge(p)
 
     @staticmethod
     def replace_escape_sequences(data):
@@ -211,6 +217,19 @@ class SheetEntry(Base):
           .order_by(Scan.concept_fkey, Scan.scan_name) \
           .all()
 
+    @classmethod
+    def extract_pronounciation(cls, all=False):
+        if all:
+            sheets = BDSession.query(cls).all()
+        else:
+            sheets = DBSession.query(cls) \
+                              .filter(text('extraction_date IS NULL or extraction_date < modification_date ')) \
+                              .all()
+        places = DBSession.query(PlaceOfInquiry).all()
+        parser = SheetParser(places)
+        for s in sheets:
+            s.extract_data(parser)
+        return sheets
 
 class SheetEntryHistory(Base):
     __tablename__ = 'tbl_sheet_entry_history'

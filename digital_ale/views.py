@@ -397,3 +397,14 @@ def sheet_edit(request):
     except Exception, e:
         log.warning(traceback.format_exc())
     return dict(status='OK')
+
+
+@view_config(route_name='extract_pronounciation', renderer='json', request_method='POST')
+def extract_pronounciation(request):
+    username = authenticated_userid(request)
+    user = User.get_by_username(username)
+    if user is None:
+        request.response.status_code = 401
+        return dict(status=401)
+    sheets = SheetEntry.extract_pronounciation(request.POST.get('all', '').lower() in ('true', 'yes', '1'))
+    return dict(status='OK', num_sheets=len(sheets))
