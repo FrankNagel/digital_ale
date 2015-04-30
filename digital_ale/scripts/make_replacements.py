@@ -25,6 +25,8 @@ from digital_ale.models import (
 
 from digital_ale.sheet_parser import SheetParser, initial_replacements
 
+log = logging.getLogger(__name__)
+
 def usage(argv):
     cmd = os.path.basename(argv[0])
     print('usage: %s <config_uri> [replacement_set..]\n'
