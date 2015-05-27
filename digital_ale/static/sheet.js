@@ -124,19 +124,24 @@ function parse_comment(entry, result) {
 
 function render_sheet_list(result_list, canvas, recursive) {
     var ystart = 70;
+    var have_errors = false;
 
+    $('#renderer_errors').html('');
     canvas.getContext('2d').clearRect(0, 0, canvas.width, canvas.height);
+    
     for (var i=0; i<result_list.length; i++) {
         var parse_result = result_list[i];
         if (parse_result.success) {
             ystart = render_sheet(parse_result.sheet, canvas, ystart);
-            $('#renderer_error_dialog').dialog( 'close');
+            if ($('#renderer_error_dialog').is(':data(dialog)')) {
+                $('#renderer_error_dialog').dialog( 'close');
+            }
         } else {
-            $('#renderer_errors').html(parse_result.errors.join('\n\n'));
-            $('#renderer_error_dialog').dialog({
-                width: 800,
-                height: 250
-            });
+            if (have_errors) {
+                $('#renderer_errors').append('\n\n');
+            }
+            $('#renderer_errors').append(parse_result.errors.join('\n\n'));
+            have_errors = true;
         }
     }
     if (recursive === undefined && ystart > canvas.height) {
@@ -144,6 +149,14 @@ function render_sheet_list(result_list, canvas, recursive) {
         canvas.height = ystart;
         render_sheet_list(result_list, canvas, true);
     }
+
+    if (have_errors) {
+        $('#renderer_error_dialog').dialog({
+            width: 800,
+            height: 250
+        });
+    }
+
 }
 
 function render_sheet(sheet, canvas, y_pos) {
