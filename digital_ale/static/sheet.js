@@ -72,14 +72,16 @@ function parse_sheet_entry(entry) {
 function parse_ident(entry, result) {
     if (entry === undefined) return;
     var parts = entry.trim().split(/\n|\r|\r\n/);
-    if (parts.length !== 2) {
+    if (parts.length === 1 && ['NV', 'NL', ''].indexOf(parts[0].trim().toUpperCase()) !== -1) {
+        return;
+    } else if (parts.length !== 2) {
         result.errors.push("(1.IDENT): Expecting two entries in separate lines. Found " + parts.length + 
                            " line(s) with entries.");
         result.success = false;
         return;
     }
-    result.sheet.ident.country = parts[0].replace(/<\/?u>/g, '');
-    result.sheet.ident.question = parts[1].replace(/<\/?u>/g, '');
+    result.sheet.ident.country = parts[0].trim().replace(/<\/?u>/g, '');
+    result.sheet.ident.question = parts[1].trim().replace(/<\/?u>/g, '');
 }
 
 function parse_information(entry, result) {
