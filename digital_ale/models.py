@@ -220,7 +220,7 @@ class SheetEntry(Base):
     @classmethod
     def extract_pronounciation(cls, all=False):
         if all:
-            sheets = BDSession.query(cls).all()
+            sheets = DBSession.query(cls).all()
         else:
             sheets = DBSession.query(cls) \
                               .filter(text('extraction_date IS NULL or extraction_date < modification_date ')) \
