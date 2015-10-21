@@ -351,6 +351,10 @@ class SheetParser(object):
                 parts[0] = ''
                 self.messages.extend(['Line %i: %s\n' % (nr, line),
                                       'Interpreting first field as place code.\n', '\n'])
+            #strip <u> tag surrounding the grouping code
+            parts[0] = parts[0].strip()
+            if parts[0].startswith('<u>') and parts[0].endswith('</u>'):
+                parts[0] = parts[0][3:-4]
             parts[1] = parts[1].strip()
             if parts[1] in (u'Ø', u'ø'):
                 continue
@@ -375,6 +379,9 @@ class SheetParser(object):
                     p = p.strip()
                     if not p:
                         p = 'Not Available'
+                    #strip surrounding <u> tag from pronounciation
+                    if p.startswith('<u>') and p.endswith('</u>') and p.find('<u>', 1) == -1:
+                        p = p[3:-4]
                     pron = models.Pronounciation()
                     pron.sheet_entry_fkey = sheetEntry.id
                     pron.grouping_code = parts[0]
