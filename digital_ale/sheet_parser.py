@@ -104,7 +104,11 @@ replacements_1 = [
     (u'\u0443', u'\u0079'), # CYRILLIC SMALL LETTER U -> U+0079	LATIN SMALL LETTER Y
 ]
 
-replacements = [replacements_1]
+replacements_2 = [
+    (u'\u0063\u0329', u'\u00E7',), # LATIN SMALL LETTER C, COMBINING VERTICAL LINE BELOW -> U+00E7 LATIN SMALL LETTER C WITH CEDILLA
+]
+
+replacements = [replacements_1, replacements_2]
 
 def initial_replacements(pronounciation, selection=None):
     if selection is None:
