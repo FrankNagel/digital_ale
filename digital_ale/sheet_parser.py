@@ -121,7 +121,7 @@ def initial_replacements(pronounciation, selection=None):
     return pronounciation
 
 def initial_clean_up(data):
-    if type(data) != unicode:
+    if not isinstance(data, unicode):
         data = unicode(data, 'utf8')
     result = []
     state = 0
@@ -154,7 +154,7 @@ def initial_clean_up(data):
                 if of_match:
                     parts[1] = pron[:of_match.start()]
                     parts[2] = pron[of_match.start():].lstrip() + parts[2]
-                    log.info('shifting right: "%s"' % pron[of_match.start():])
+                    log.info('shifting right: "%s"', pron[of_match.start():])
                 parts[1] = initial_replacements(parts[1])
                 parts[1] = clean_up_underline(parts[1])
                 result.append('\t'.join(parts))
@@ -174,7 +174,7 @@ def clean_up_underline(data):
         if len(graphemes) == 2:
             old_data = data
             data = data[:match.start()] + graphemes[0] + unichr(0x035f) + graphemes[1] + data[match.end():]
-            log.info('replacing "%s" with "%s"' % (old_data, data))
+            log.info('replacing "%s" with "%s"', old_data, data)
         start = match.start() + 1
     return data
 
@@ -189,7 +189,7 @@ def build_graphemes(data):
             result.append([x])
     return [u''.join(x) for x in result]
 
-class LineIterator():
+class LineIterator(object):
     def __init__(self, text):
         self.text = text.splitlines()
         self.index = 0
@@ -207,66 +207,66 @@ class LineIterator():
         return t
 
 aliases = {
-    ('05.0','021'): '05.0.301',
+    ('05.0', '021'): '05.0.301',
 
-    ('07.0','301'): '07.F.301',
-    ('07.0','302'): '07.F.302',
-    ('07.0','351'): '07.F.351',
-    ('07.0','352'): '07.F.352',
-    ('07.0','353'): '07.F.353',
-    ('07.0','354'): '07.F.354',
-    ('07.0','355'): '07.F.355',
-    ('07.0','356'): '07.F.356',
-    ('07.0','357'): '07.F.357',
-    ('07.0','358'): '07.F.358',
-    ('07.0','359'): '07.F.359',
-    ('07.0','360'): '07.F.360',
-    ('07.0','361'): '07.F.361',
-    ('07.0','362'): '07.F.362',
-    ('07.0','363'): '07.F.363',
-    ('07.0','391'): '07.F.391',
-    ('07.0','392'): '07.F.392',
-    ('07.0','393'): '07.F.393',
-    ('07.0','401'): '07.F.401',
-    ('07.0','701'): '07.F.701',
-    ('07.0','702'): '07.F.702',
+    ('07.0', '301'): '07.F.301',
+    ('07.0', '302'): '07.F.302',
+    ('07.0', '351'): '07.F.351',
+    ('07.0', '352'): '07.F.352',
+    ('07.0', '353'): '07.F.353',
+    ('07.0', '354'): '07.F.354',
+    ('07.0', '355'): '07.F.355',
+    ('07.0', '356'): '07.F.356',
+    ('07.0', '357'): '07.F.357',
+    ('07.0', '358'): '07.F.358',
+    ('07.0', '359'): '07.F.359',
+    ('07.0', '360'): '07.F.360',
+    ('07.0', '361'): '07.F.361',
+    ('07.0', '362'): '07.F.362',
+    ('07.0', '363'): '07.F.363',
+    ('07.0', '391'): '07.F.391',
+    ('07.0', '392'): '07.F.392',
+    ('07.0', '393'): '07.F.393',
+    ('07.0', '401'): '07.F.401',
+    ('07.0', '701'): '07.F.701',
+    ('07.0', '702'): '07.F.702',
 
 
-    ('08.0','301'): '25.2.208',
+    ('08.0', '301'): '25.2.208',
 
-    ('18.0','101'): '18.1.101',
-    ('18.0','102'): '18.1.102',
-    ('18.0','103'): '18.1.103',
-    ('18.0','104'): '18.1.104',
-    ('18.0','105'): '18.1.105',
-    ('18.0','801'): '08.0.801',
+    ('18.0', '101'): '18.1.101',
+    ('18.0', '102'): '18.1.102',
+    ('18.0', '103'): '18.1.103',
+    ('18.0', '104'): '18.1.104',
+    ('18.0', '105'): '18.1.105',
+    ('18.0', '801'): '08.0.801',
 
-    ('22.0','001'): '18.1.201',
-    ('22.0','002'): '18.1.202',
-    ('22.0','003'): '18.1.203',
-    ('22.0','137'): '18.1.204',
+    ('22.0', '001'): '18.1.201',
+    ('22.0', '002'): '18.1.202',
+    ('22.0', '003'): '18.1.203',
+    ('22.0', '137'): '18.1.204',
 
-    ('24.0','501'): '07.5.501',
-    ('24.0','502'): '07.5.502',
-    ('24.0','503'): '07.5.503',
-    ('24.0','504'): '07.5.504',
-    ('24.0','505'): '07.5.505',
-    ('24.0','506'): '07.5.506',
+    ('24.0', '501'): '07.5.501',
+    ('24.0', '502'): '07.5.502',
+    ('24.0', '503'): '07.5.503',
+    ('24.0', '504'): '07.5.504',
+    ('24.0', '505'): '07.5.505',
+    ('24.0', '506'): '07.5.506',
 
-    ('29.0','101'): '29.1.101',
-    ('29.0','102'): '29.1.102',
-    ('29.0','103'): '29.1.103',
-    ('29.0','104'): '29.1.104',
-    ('29.0','105'): '29.1.105',
-    ('29.0','106'): '29.1.106',
-    ('29.0','107'): '29.1.107',
+    ('29.0', '101'): '29.1.101',
+    ('29.0', '102'): '29.1.102',
+    ('29.0', '103'): '29.1.103',
+    ('29.0', '104'): '29.1.104',
+    ('29.0', '105'): '29.1.105',
+    ('29.0', '106'): '29.1.106',
+    ('29.0', '107'): '29.1.107',
 }
 
 class SheetParser(object):
     def __init__(self, places):
         self.places = places
         self.places_pc_old = {p.pointcode_old: p  for p in places}
-        
+
         self.part_regex = re.compile(r'\s*\(\s*(\d)\.?\s*([^\W\d_]+)\)\s*')
         self.result = []
         self.messages = []
@@ -278,9 +278,8 @@ class SheetParser(object):
         lines = LineIterator(sheetEntry.data)
         context_from_id = sheetEntry.id[4:8]
         state = 0
-        result = []
         while True:
-            nr, line = lines.next()
+            _, line = lines.next()
             if not line:
                 break
             match = self.part_regex.match(line)
@@ -297,7 +296,7 @@ class SheetParser(object):
         return self.result
 
     def parseIdent(self, lines, context_from_id):
-        nr, line = lines.next()
+        _, line = lines.next()
         if not line:
             return
         start = 0
@@ -326,7 +325,7 @@ class SheetParser(object):
             context = context_from_id
         self.context = context
         while True:
-            nr, line = lines.peek()
+            _, line = lines.peek()
             if not line or self.part_regex.match(line):
                 return
             lines.next()
@@ -341,7 +340,7 @@ class SheetParser(object):
             parts = line.split('\t')
             if len(parts) == 3:
                 parts.insert(2, '')
-            if len(parts) not in (4,5):
+            if len(parts) not in (4, 5):
                 if line.strip().upper() not in  ['NV', 'NL']:
                     self.messages.extend(['Line %i: %s\n' % (nr, line),
                                           'Expecting three to five TAB separated fields (got %i)\n' % len(parts), '\n'])
@@ -371,8 +370,8 @@ class SheetParser(object):
                 observations = self.parse_places(parts[3], (nr, line))
             except Exception, e:
                 observations = []
-                self.messages.extend(['Line %i: %s\n' % (nr, line), 'Exception parsing place numbers: %s\n' % e , '\n'])
-            
+                self.messages.extend(['Line %i: %s\n' % (nr, line), 'Exception parsing place numbers: %s\n' % e, '\n'])
+
             if observations:
                 pron_parts = pronounciation.split(',')
                 for p in pron_parts:
@@ -449,6 +448,6 @@ class SheetParser(object):
             if aliases.has_key((self.context, num)):
                 return self.places_pc_old[aliases[(self.context, num)]]
             if not quiet:
-                self.messages.extend(['Line %i: %s\n' % parse_context, 'Could not find place for: %s\n' % num , '\n'])
+                self.messages.extend(['Line %i: %s\n' % parse_context, 'Could not find place for: %s\n' % num, '\n'])
         else:
             return self.places_pc_old[key]

@@ -20,8 +20,8 @@ def main(global_config, **settings):
 
     session_factory = SignedCookieSessionFactory(
         settings['session.secret'],
-        timeout = settings.get('session.timeout', 3600),
-        reissue_time = settings.get('session.reissue_time', 360)
+        timeout=settings.get('session.timeout', 3600),
+        reissue_time=settings.get('session.reissue_time', 360)
         )
 
     authn_policy = SessionAuthenticationPolicy()
@@ -37,7 +37,7 @@ def main(global_config, **settings):
 
     config.include('pyramid_chameleon')
     config.add_static_view('static', 'static', cache_max_age=3600)
-    
+
     config.add_route('home', '/')
     config.add_route('register', '/register')
     config.add_route('login', '/login')

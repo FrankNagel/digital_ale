@@ -4,13 +4,10 @@ from collections import namedtuple
 import json
 from sqlalchemy import (
     Column,
-    DDL,
     DefaultClause,
     and_,
-    event,
     ForeignKey,
     func,
-    Index,
     Integer,
     Float,
     Text,
@@ -23,9 +20,7 @@ from sqlalchemy.orm import (
     relationship,
     scoped_session,
     sessionmaker,
-    column_property,
     synonym,
-    joinedload,
     )
 
 from sqlalchemy.types import (
@@ -34,7 +29,6 @@ from sqlalchemy.types import (
     Enum,
     Integer,
     Unicode,
-    UnicodeText,
     DateTime,
     Enum,
     )
@@ -100,7 +94,7 @@ class User(Base):
             return False
         return crypt.check(user.password, password)
 
-    
+
 class Scan(Base):
     __tablename__ = 'tbl_scan'
     id = Column(Integer, primary_key=True)
@@ -128,7 +122,7 @@ class Scan(Base):
         return DBSession.query(Scan).filter(and_(Scan.concept_fkey == concept_id, Scan.scan_name == scan_name)).first()
 
 
-    
+
 SheetEntryStateClass = namedtuple('SheetEntryState', 'unchecked contains_at in_progress problematic ok ignore')
 SheetEntryState = SheetEntryStateClass('Unchecked', 'Contains @', 'In Progress', 'Problematic', 'OK', 'Ignore')
 
@@ -191,7 +185,7 @@ class SheetEntry(Base):
             c = unichr(int(match.group(1), 16))
             data = data.replace(match.group(), c)
         return data
-                
+
     @classmethod
     def get_by_scan_id(cls, scan_id):
         return DBSession.query(SheetEntry).filter(SheetEntry.scan_fkey == scan_id).first()
@@ -256,7 +250,7 @@ class Concept(Base):
     def get_overview(cls):
         cmd = """\
 select tc.id, tc.eng, tc.fra,
-	count(ts.id) as num_scans, 
+	count(ts.id) as num_scans,
 	count(te.status = 'Unchecked' or null) as num_unchecked,
 	count(te.status = 'Contains @' or null) as num_contains_at,
 	count(te.status = 'In Progress' or null) as num_in_progress,
@@ -281,7 +275,7 @@ class PlaceOfInquiry(Base):
     name = Column(Text)
     language_group = Column(Text)
     lat = Column(Float)
-    lng = Column(Float)    
+    lng = Column(Float)
     remarks = Column(Text)
     coordinates_validated = Column(BOOLEAN, nullable=False, default=False)
 
@@ -293,7 +287,7 @@ from tbl_place_of_inquiry tp
     left join tbl_place_candidate tc on tp.id = tc.place_of_inquiry_fkey
 group by tp.id
 order by tp.pointcode_old"""
-        
+
         result = DBSession.execute(cmd)
         Record = namedtuple('PlaceOverview', result.keys())
         return [Record(*r) for r in result.fetchall()]
@@ -321,7 +315,7 @@ class PlaceCandidate(Base):
     @classmethod
     def get_candidate(cls, candidate_id):
         return DBSession.query(cls).filter(cls.id == candidate_id).first()
-    
+
     @classmethod
     def get_candidates_for_place(cls, place_id):
         return DBSession.query(cls).filter(cls.place_of_inquiry_fkey == place_id).all()
@@ -377,7 +371,7 @@ class Observation(Base):
     place_of_inquiry_fkey = Column(Integer, ForeignKey('tbl_place_of_inquiry.id'),
                                    primary_key=True, nullable=False, index=True)
 
-    
+
 class Pronounciation(Base):
     __tablename__ = 'tbl_pronounciation'
     id = Column(Integer, primary_key=True)
