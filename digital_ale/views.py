@@ -267,13 +267,13 @@ coord_parser.__name__ = '<float>|null'
 bool_parser = lambda x: True if x == 'true' else False
 bool_parser.__name__ = 'true|false'
 
-@view_config(route_name='place_edit', renderer='json', request_method='POST')
+@view_config(route_name='place_edit', renderer='json', request_method='POST', permission='edit_place')
 def place_edit(request):
     username = request.authenticated_userid
     user = User.get_by_username(username)
     if user is None:
-        request.response.status_code = 401
-        return dict(status=401)
+        #should never happen
+        raise HTTPForbidden()
     try:
         place_id = int(request.matchdict['place_id'])
     except ValueError:
@@ -303,8 +303,8 @@ def place_get(request):
     try:
         place_id = int(request.matchdict['place_id'])
     except ValueError:
-        request.response.status_code = 404
-        return dict(status=404)    
+        request.response.status_code = 400
+        return dict(status=400)
     place = PlaceOfInquiry.get(place_id)
     if not place:
         request.response.status_code = 404
@@ -325,13 +325,13 @@ def place_get_all(request):
     return response
 
 
-@view_config(route_name='place_candidate_add', renderer='json', request_method='POST')
+@view_config(route_name='place_candidate_add', renderer='json', request_method='POST', permission='edit_place')
 def place_candidate_add(request):
     username = request.authenticated_userid
     user = User.get_by_username(username)
     if user is None:
-        request.response.status_code = 401
-        return dict(status=401)
+        #should never happen
+        raise HTTPForbidden()
     candidate = PlaceCandidate()
     for key, k_type, attr_name in [('place_id', int, 'place_of_inquiry_fkey'),
                                    ('name', unicode, 'name'),
@@ -354,13 +354,13 @@ def place_candidate_add(request):
     return dict(status='OK')
 
 
-@view_config(route_name='place_candidate', renderer='json', request_method='DELETE')
+@view_config(route_name='place_candidate', renderer='json', request_method='DELETE', permission='edit_place')
 def place_candidate_delete(request):
     username = request.authenticated_userid
     user = User.get_by_username(username)
     if user is None:
-        request.response.status_code = 401
-        return dict(status=401)
+        #should never happen
+        raise HTTPForbidden()
     try:
         candidate_id = int(request.matchdict['candidate_id'])
     except ValueError:
@@ -418,6 +418,9 @@ def extract_pronounciation(request):
     return dict(status='OK', num_sheets=len(sheets))
 
 
+@view_config(context=HTTPForbidden, route_name='place_edit', renderer='json', request_method='POST')
+@view_config(context=HTTPForbidden, route_name='place_candidate_add', renderer='json', request_method='POST')
+@view_config(context=HTTPForbidden, route_name='place_candidate', renderer='json', request_method='DELETE')
 @view_config(context=HTTPForbidden, route_name='extract_pronounciation', renderer='json', request_method='POST')
 @view_config(context=HTTPForbidden, route_name='sheet_edit', renderer='json', request_method='POST')
 def json_authorization_error(request):
