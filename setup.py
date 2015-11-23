@@ -14,6 +14,7 @@ requires = [
     'pyramid_chameleon',
     'pyramid_debugtoolbar',
     'pyramid_tm',
+    'pyramid_mailer',
     'SQLAlchemy',
     'psycopg2',
     'alembic',

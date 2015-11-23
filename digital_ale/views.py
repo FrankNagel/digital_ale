@@ -37,6 +37,9 @@ from pyramid.security import (
     forget,
     )
 
+from pyramid_mailer import get_mailer
+from pyramid_mailer.message import Message
+
 from sheet_parser import SheetParser
 
 
@@ -77,6 +80,16 @@ def register_view(request):
             user = User(login_name, password, login_name, email)
             DBSession.add(user)
             success_msg = 'User created. You can log in now.'
+
+            #send an email for newly registered user
+            recipient = request.registry.settings.get('mail.address', None)
+            if recipient:
+                message = Message(subject="Digital ALE registration",
+                                  sender="norply@ale.paralleltext.info",
+                                  recipients=[request.registry.settings['mail.address']],
+                                  body="A New User registered:\n\t%s\n\t%s" % (login_name, email))
+                mailer = get_mailer(request)
+                mailer.send(message)
     return dict(username=username,
                 login_name=login_name,
                 email = email,
