@@ -29,6 +29,7 @@ from pyramid.httpexceptions import (
     HTTPFound,
     HTTPNotFound,
     HTTPUnauthorized,
+    HTTPForbidden,
     )
 
 from pyramid.security import (
@@ -378,13 +379,13 @@ def place_candidate_delete(request):
     return dict(status='OK')
 
 
-@view_config(route_name='sheet_edit', renderer='json', request_method='POST')
+@view_config(route_name='sheet_edit', renderer='json', request_method='POST', permission='edit_sheet')
 def sheet_edit(request):
     username = authenticated_userid(request)
     user = User.get_by_username(username)
     if user is None:
-        request.response.status_code = 401
-        return dict(status=401)
+        #should never happen with active authorization policy
+        raise HTTPForbidden()
     concept_id = request.matchdict['concept_id']
     scan_name = request.matchdict['scan_name']
     message = ''
@@ -399,8 +400,8 @@ def sheet_edit(request):
         
     new_status = request.POST.get('status', '')
     if new_status not in SheetEntryState:
-        request.response.status_code = 401
-        return dict(status=401, reason="Invalid status code")
+        request.response.status_code = 400
+        return dict(status=400, reason="Invalid status code")
     sheetEntry.status = new_status
     sheetEntry.editor_fkey = user.id
     sheetEntry.data = request.POST.get('data', '')
@@ -412,12 +413,19 @@ def sheet_edit(request):
     return dict(status='OK')
 
 
-@view_config(route_name='extract_pronounciation', renderer='json', request_method='POST')
+@view_config(route_name='extract_pronounciation', renderer='json', request_method='POST', permission='bulk_extract')
 def extract_pronounciation(request):
-    username = authenticated_userid(request)
-    user = User.get_by_username(username)
-    if user is None:
-        request.response.status_code = 401
-        return dict(status=401)
     sheets = SheetEntry.extract_pronounciation(request.POST.get('all', '').lower() in ('true', 'yes', '1'))
     return dict(status='OK', num_sheets=len(sheets))
+
+
+@view_config(context=HTTPForbidden, route_name='extract_pronounciation', renderer='json', request_method='POST')
+@view_config(context=HTTPForbidden, route_name='sheet_edit', renderer='json', request_method='POST')
+def json_authorization_error(request):
+    username = authenticated_userid(request)
+    if username is None:
+        request.response.status_code = 401
+        return dict(status=401)
+    else:
+        request.response.status_code = 403
+        return dict(status=403)

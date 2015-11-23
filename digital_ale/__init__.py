@@ -8,6 +8,7 @@ from .models import (
     DBSession,
     Base,
     RootFactory,
+    get_user_roles
     )
 
 
@@ -24,7 +25,7 @@ def main(global_config, **settings):
         reissue_time=settings.get('session.reissue_time', 360)
         )
 
-    authn_policy = SessionAuthenticationPolicy()
+    authn_policy = SessionAuthenticationPolicy(callback=get_user_roles)
     authz_policy = ACLAuthorizationPolicy()
 
     config = Configurator(

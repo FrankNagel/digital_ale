@@ -33,6 +33,8 @@ from sqlalchemy.types import (
     Enum,
     )
 
+from sqlalchemy.dialects.postgresql import ARRAY
+
 from pyramid.security import (
     Everyone,
     Authenticated,
@@ -55,6 +57,29 @@ def hash_password(password):
 DBSession = scoped_session(sessionmaker(extension=ZopeTransactionExtension()))
 Base = declarative_base()
 
+class ArrayOfEnum(ARRAY):
+    """Helper class to support arrays of enums in PostgreSQL"""
+    def bind_expression(self, bindvalue):
+        return sa.cast(bindvalue, self)
+
+    def result_processor(self, dialect, coltype):
+        super_rp = super(ArrayOfEnum, self).result_processor(
+            dialect, coltype)
+
+        def handle_raw_string(value):
+            inner = re.match(r"^{(.*)}$", value).group(1)
+            return inner.split(",")
+
+        def process(value):
+            if value is None:
+                return None
+            return super_rp(handle_raw_string(value))
+        return process
+
+
+RoleClass = namedtuple('Role', 'admin editor')
+Role = RoleClass('admin', 'editor')
+
 
 class User(Base):
     """
@@ -65,6 +90,7 @@ class User(Base):
     login_name = Column(Unicode(50), unique=True)
     display_name = Column(Unicode(50))
     email = Column(Unicode(80))
+    roles = Column(ArrayOfEnum(Enum(*Role, name="user_role")))
 
     _password = Column('password', Unicode(60))
 
@@ -93,6 +119,16 @@ class User(Base):
         if not user:
             return False
         return crypt.check(user.password, password)
+
+
+def get_user_roles(userid, request):
+    user = User.get_by_username(userid)
+    if user is None:
+        return None
+    elif user.roles is None:
+        return []
+    else:
+        return ['role:'+r for r in user.roles]
 
 
 class Scan(Base):
@@ -405,7 +441,10 @@ class Pronounciation(Base):
 class RootFactory(object):
     __acl__ = [
         (Allow, Everyone, 'view'),
-        (Allow, Authenticated, 'post')
+        (Allow, Authenticated, 'post'),
+        (Allow, 'role:editor', 'edit_sheet'),
+        (Allow, 'role:admin', 'bulk_extract')
+
     ]
 
     def __init__(self, request):
