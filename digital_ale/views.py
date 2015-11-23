@@ -33,7 +33,6 @@ from pyramid.httpexceptions import (
     )
 
 from pyramid.security import (
-    authenticated_userid,
     remember,
     forget,
     )
@@ -46,14 +45,14 @@ from sheet_parser import SheetParser
 
 @view_config(route_name='home', renderer='templates/overview.mako')
 def main_view(request):
-    username = authenticated_userid(request)
+    username = request.authenticated_userid
     return dict(username=username,
                 overview=Concept.get_overview())
 
 
 @view_config(route_name='register', renderer='templates/register.mako')
 def register_view(request):
-    username = authenticated_userid(request)
+    username = request.authenticated_userid
     login_name = ''
     email = ''
     success_msg = ''
@@ -101,7 +100,7 @@ def register_view(request):
 
 @view_config(route_name='login', renderer='templates/login.mako')
 def login_view(request):
-    username = authenticated_userid(request)
+    username = request.authenticated_userid
     url_next = request.params.get('next') or request.route_url('home')
     login_name = ''
     did_fail = False
@@ -110,7 +109,7 @@ def login_view(request):
         password = request.POST.get('password', '')
         if User.check_password(login_name, password):
             headers = remember(request, login_name)
-            username = authenticated_userid(request)
+            username = request.authenticated_userid
             return HTTPFound(location=url_next, headers=headers)
         else:
             did_fail = True
@@ -132,7 +131,7 @@ def logout_view(request):
 
 @view_config(route_name='concept', renderer='templates/concept.mako')
 def concept_view(request):
-    username = authenticated_userid(request)
+    username = request.authenticated_userid
     concept_id = request.matchdict['concept_id']
     concept = Concept.get_by_id(concept_id)
     if concept is None:
@@ -145,7 +144,7 @@ def concept_view(request):
 
 @view_config(route_name='concept_data', renderer='templates/concept_data.mako')
 def concept_data_view(request):
-    username = authenticated_userid(request)
+    username = request.authenticated_userid
     concept_id = request.matchdict['concept_id']
     concept = Concept.get_by_id(concept_id)
     if concept is None:
@@ -165,7 +164,7 @@ def concept_data_view(request):
 
 @view_config(route_name='sheet_prefix', renderer='templates/sheet_by_prefix.mako')
 def sheet_prefix_view(request):
-    username = authenticated_userid(request)
+    username = request.authenticated_userid
     sheet_prefix = request.matchdict['sheet_prefix']
     scans_sheets = SheetEntry.get_scan_entry_by_prefix(sheet_prefix)
     if not scans_sheets:
@@ -174,7 +173,7 @@ def sheet_prefix_view(request):
 
 @view_config(route_name='sheet_prefix_data', renderer='templates/concept_data.mako')
 def sheet_prefix_data_view(request):
-    username = authenticated_userid(request)
+    username = request.authenticated_userid
     sheet_prefix = request.matchdict['sheet_prefix']
     scans_sheets = SheetEntry.get_scan_entry_by_prefix(sheet_prefix)
     if not scans_sheets:
@@ -194,7 +193,7 @@ def sheet_prefix_data_view(request):
 
 @view_config(route_name='concept_tsv', renderer='string')
 def concept_tsv_view(request):
-    username = authenticated_userid(request)
+    username = request.authenticated_userid
     concept_id = request.matchdict['concept_id']
     concept = Concept.get_by_id(concept_id)
     if concept is None:
@@ -215,7 +214,7 @@ def concept_tsv_view(request):
 
 @view_config(route_name='sheet', renderer='templates/sheet.mako')
 def sheet_view(request):
-    username = authenticated_userid(request)
+    username = request.authenticated_userid
     concept_id = request.matchdict['concept_id']
     scan_name = request.matchdict['scan_name']
     scan = Scan.get_by_concept_name(concept_id, scan_name)
@@ -230,14 +229,14 @@ def sheet_view(request):
 
 @view_config(route_name='places', renderer='templates/places.mako')
 def places_view(request):
-    username = authenticated_userid(request)
+    username = request.authenticated_userid
     places = PlaceOfInquiry.get_overview()
     return dict(places=places, username=username)
 
 
 @view_config(route_name='places_all', renderer='templates/places_all.mako')
 def places_all_view(request):
-    username = authenticated_userid(request)
+    username = request.authenticated_userid
     return dict(username=username)
 
 
@@ -270,7 +269,7 @@ bool_parser.__name__ = 'true|false'
 
 @view_config(route_name='place_edit', renderer='json', request_method='POST')
 def place_edit(request):
-    username = authenticated_userid(request)
+    username = request.authenticated_userid
     user = User.get_by_username(username)
     if user is None:
         request.response.status_code = 401
@@ -328,7 +327,7 @@ def place_get_all(request):
 
 @view_config(route_name='place_candidate_add', renderer='json', request_method='POST')
 def place_candidate_add(request):
-    username = authenticated_userid(request)
+    username = request.authenticated_userid
     user = User.get_by_username(username)
     if user is None:
         request.response.status_code = 401
@@ -357,7 +356,7 @@ def place_candidate_add(request):
 
 @view_config(route_name='place_candidate', renderer='json', request_method='DELETE')
 def place_candidate_delete(request):
-    username = authenticated_userid(request)
+    username = request.authenticated_userid
     user = User.get_by_username(username)
     if user is None:
         request.response.status_code = 401
@@ -381,7 +380,7 @@ def place_candidate_delete(request):
 
 @view_config(route_name='sheet_edit', renderer='json', request_method='POST', permission='edit_sheet')
 def sheet_edit(request):
-    username = authenticated_userid(request)
+    username = request.authenticated_userid
     user = User.get_by_username(username)
     if user is None:
         #should never happen with active authorization policy
@@ -422,7 +421,7 @@ def extract_pronounciation(request):
 @view_config(context=HTTPForbidden, route_name='extract_pronounciation', renderer='json', request_method='POST')
 @view_config(context=HTTPForbidden, route_name='sheet_edit', renderer='json', request_method='POST')
 def json_authorization_error(request):
-    username = authenticated_userid(request)
+    username = request.authenticated_userid
     if username is None:
         request.response.status_code = 401
         return dict(status=401)
