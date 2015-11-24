@@ -15,6 +15,7 @@ requires = [
     'pyramid_debugtoolbar',
     'pyramid_tm',
     'pyramid_mailer',
+    'repoze.sendmail==4.1',
     'SQLAlchemy',
     'psycopg2',
     'alembic',
