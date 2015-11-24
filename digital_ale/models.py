@@ -12,6 +12,7 @@ from sqlalchemy import (
     Float,
     Text,
     text,
+    cast,
     )
 
 from sqlalchemy.ext.declarative import declarative_base
@@ -60,7 +61,7 @@ Base = declarative_base()
 class ArrayOfEnum(ARRAY):
     """Helper class to support arrays of enums in PostgreSQL"""
     def bind_expression(self, bindvalue):
-        return sa.cast(bindvalue, self)
+        return cast(bindvalue, self)
 
     def result_processor(self, dialect, coltype):
         super_rp = super(ArrayOfEnum, self).result_processor(
