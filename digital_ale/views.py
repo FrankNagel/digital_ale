@@ -64,7 +64,7 @@ def register_view(request):
         password = request.POST.get('password', '')
         confirm_password = request.POST.get('confirm_password', '')
         for _ in [None]:
-            if login_name == '':
+            if login_name == '' or login_name.startswith('role:'):
                 error_msg = 'Login name invalid.'
                 break
             user = User.get_by_username(login_name)
