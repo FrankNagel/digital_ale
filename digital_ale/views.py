@@ -85,7 +85,7 @@ def register_view(request):
             recipient = request.registry.settings.get('mail.address', None)
             if recipient:
                 message = Message(subject="Digital ALE registration",
-                                  sender="norply@ale.paralleltext.info",
+                                  sender="noreply@ale.paralleltext.info",
                                   recipients=[request.registry.settings['mail.address']],
                                   body="A New User registered:\n\t%s\n\t%s" % (login_name, email))
                 mailer = get_mailer(request)
