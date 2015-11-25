@@ -444,6 +444,7 @@ class RootFactory(object):
         (Allow, Everyone, 'view'),
         (Allow, Authenticated, 'post'),
         (Allow, 'role:editor', 'edit_sheet'),
+        (Allow, 'role:editor', 'edit_place'),
         (Allow, 'role:admin', 'bulk_extract')
 
     ]
