@@ -1,4 +1,4 @@
-import json
+#!/usr/bin/env python
 
 import traceback
 
@@ -62,7 +62,7 @@ def register_view(request):
     email = ''
     success_msg = ''
     error_msg = ''
-    
+
     if 'submit' in request.POST:
         login_name = request.POST.get('login_name', '').strip()
         email = request.POST.get('email', '').strip()
@@ -97,10 +97,10 @@ def register_view(request):
                 mailer.send(message)
     return dict(username=username,
                 login_name=login_name,
-                email = email,
-                success_msg = success_msg,
-                error_msg = error_msg,
-                url_next = request.route_url('home'))
+                email=email,
+                success_msg=success_msg,
+                error_msg=error_msg,
+                url_next=request.route_url('home'))
 
 
 @view_config(route_name='login', renderer='templates/login.mako')
@@ -198,7 +198,6 @@ def sheet_prefix_data_view(request):
 
 @view_config(route_name='concept_tsv', renderer='string')
 def concept_tsv_view(request):
-    username = request.authenticated_userid
     concept_id = request.matchdict['concept_id']
     concept = Concept.get_by_id(concept_id)
     if concept is None:
@@ -215,7 +214,7 @@ def concept_tsv_view(request):
             for place in p.observations:
                 result.append('%s\t%s\t%s\t%s\n' % (p.pronounciation, place.pointcode_old, concept_id, sheet_entry.id))
     return ''.join(result)
-    
+
 
 @view_config(route_name='sheet', renderer='templates/sheet.mako')
 def sheet_view(request):
@@ -257,10 +256,9 @@ def place_candidates_view(request):
     if place is None:
         request.response.status_code = 404
         return dict(status=404)
-    place_json = dict(id=place.id, name=place.name, country_code=place.pointcode_new[2:], lat=place.lat, lng=place.lng)
     wanted = set(['id', 'name', 'country_code', 'lat', 'lng', 'feature_code', 'source', 'complete_data'])
     candidates = [{key: x.__dict__[key] for key in x.__dict__.keys() if key in wanted}
-                   for x in PlaceCandidate.get_candidates_for_place(place_id)]
+                  for x in PlaceCandidate.get_candidates_for_place(place_id)]
     for c in candidates:
         c['selected'] = c['lat'] == place.lat and c['lng'] == place.lng
     return dict(status='OK', candidates=candidates)
@@ -323,11 +321,10 @@ def place_get(request):
 
 @view_config(route_name='place_get_all', renderer='json', request_method='GET')
 def place_get_all(request):
-    places = DBSession.query(PlaceOfInquiry).filter('lat is not null').all();
+    places = DBSession.query(PlaceOfInquiry).filter('lat is not null').all()
     wanted = set(['id', 'pointcode_old', 'pointcode_new', 'name', 'lat', 'lng', 'remarks', 'coordinates_validated'])
     response = [{key: place.__dict__[key] for key in place.__dict__.keys() if key in wanted} for place in places]
     return dict(status='OK', places=response)
-    return response
 
 
 @view_config(route_name='place_candidate_add', renderer='json', request_method='POST', permission='edit_place')
@@ -370,7 +367,7 @@ def place_candidate_delete(request):
         candidate_id = int(request.matchdict['candidate_id'])
     except ValueError:
         request.response.status_code = 404
-        return dict(status=404)        
+        return dict(status=404)
     candidate = PlaceCandidate.get_candidate(candidate_id)
     if not candidate:
         request.response.status_code = 404
@@ -401,7 +398,7 @@ def sheet_edit(request):
     if sheetEntry is None:
         sheetEntry = SheetEntry(scan.concept_fkey, scan.scan_name, scan.id, '')
         DBSession.add(sheetEntry)
-        
+
     new_status = request.POST.get('status', '')
     if new_status not in SheetEntryState:
         request.response.status_code = 400
@@ -412,8 +409,8 @@ def sheet_edit(request):
     sheetEntry.comment = request.POST.get('comment', '')
     try:
         sheetEntry.extract_data()
-    except Exception, e:
-        log.warning(traceback.format_exc())
+    except Exception:
+        log.error(traceback.format_exc())
     return dict(status='OK')
 
 
@@ -472,7 +469,7 @@ def admin_import_sheet_post(request):
             pre.append('\t' + m)
     pre = '\n'.join(pre)
     return dict(import_msg=pre)
-    
+
 
 
 @view_config(route_name='admin_users', renderer='templates/admin_users.mako', request_method='GET',
@@ -487,7 +484,7 @@ def admin_users(request):
 @view_config(route_name='admin_user_settings', renderer='templates/admin_user_settings.mako', request_method='GET',
              permission='admin')
 def admin_user_settings(request):
-    user=User.get_by_username(request.matchdict['user_id'])
+    user = User.get_by_username(request.matchdict['user_id'])
     if user is None:
         raise HTTPNotFound()
     return dict(
@@ -500,7 +497,7 @@ def admin_user_settings(request):
 @view_config(route_name='admin_user_settings', renderer='templates/admin_user_settings.mako', request_method='POST',
              permission='admin')
 def admin_user_settings_post(request):
-    user=User.get_by_username(request.matchdict['user_id'])
+    user = User.get_by_username(request.matchdict['user_id'])
     if user is None:
         raise HTTPNotFound()
     action = request.POST.get('action', '')
