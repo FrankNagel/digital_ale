@@ -5,6 +5,8 @@ import traceback
 import logging
 log = logging.getLogger(__name__)
 
+from zipfile import ZipFile
+
 from pyramid.response import Response
 
 from pyramid.view import view_config
@@ -19,6 +21,7 @@ from .models import (
     PlaceOfInquiry,
     PlaceCandidate,
     Pronounciation,
+    Role,
     Scan,
     SheetEntry,
     SheetEntryState,
@@ -30,6 +33,7 @@ from pyramid.httpexceptions import (
     HTTPNotFound,
     HTTPUnauthorized,
     HTTPForbidden,
+    HTTPBadRequest
     )
 
 from pyramid.security import (
@@ -40,6 +44,7 @@ from pyramid.security import (
 from pyramid_mailer import get_mailer
 from pyramid_mailer.message import Message
 
+from data_import import import_txt
 from sheet_parser import SheetParser
 
 
@@ -431,3 +436,81 @@ def json_authorization_error(request):
     else:
         request.response.status_code = 403
         return dict(status=403)
+
+
+@view_config(route_name='admin_import_sheet', renderer='templates/admin_import_sheet.mako', request_method='GET',
+             permission='admin')
+def admin_import_sheet(request):
+    return dict()
+
+
+@view_config(route_name='admin_import_sheet', renderer='templates/admin_import_sheet.mako', request_method='POST',
+             permission='admin')
+def admin_import_sheet_post(request):
+    sheet = request.POST.get('sheet', None)
+    if sheet is None:
+        raise HTTPBadRequest()
+    user = User.get_by_username(request.authenticated_userid)
+    if user is None:
+        raise HTTPForbidden()
+    import_msg = []
+    places = DBSession.query(PlaceOfInquiry).all()
+    parser = SheetParser(places)
+    if sheet.filename.lower().endswith('.zip'):
+        with ZipFile(sheet.file) as zip_file:
+            for zip_info in zip_file.infolist():
+                with zip_file.open(zip_info) as sheet_file:
+                    msg = import_txt(zip_info.filename, sheet_file, user, parser)
+                    import_msg.append((zip_info.filename, msg))
+    else:
+        msg = import_txt(sheet.filename, sheet.file, parser)
+        import_msg.append((sheet.filename, msg))
+    pre = []
+    for filename, msg in import_msg:
+        pre.append(filename)
+        for m in msg:
+            pre.append('\t' + m)
+    pre = '\n'.join(pre)
+    return dict(import_msg=pre)
+    
+
+
+@view_config(route_name='admin_users', renderer='templates/admin_users.mako', request_method='GET',
+             permission='admin')
+def admin_users(request):
+    return dict(
+        username=request.authenticated_userid,
+        user_list=User.get_all_usernames()
+    )
+
+
+@view_config(route_name='admin_user_settings', renderer='templates/admin_user_settings.mako', request_method='GET',
+             permission='admin')
+def admin_user_settings(request):
+    user=User.get_by_username(request.matchdict['user_id'])
+    if user is None:
+        raise HTTPNotFound()
+    return dict(
+        username=request.authenticated_userid,
+        user=user,
+        roles=list(Role)
+        )
+
+
+@view_config(route_name='admin_user_settings', renderer='templates/admin_user_settings.mako', request_method='POST',
+             permission='admin')
+def admin_user_settings_post(request):
+    user=User.get_by_username(request.matchdict['user_id'])
+    if user is None:
+        raise HTTPNotFound()
+    action = request.POST.get('action', '')
+    if action == 'save_password':
+        new_password = request.POST.get('password', '')
+        user.password = new_password
+    elif action == 'save_roles':
+        new_roles = []
+        for role in Role:
+            if role in request.POST:
+                new_roles.append(role)
+        user.roles = new_roles
+    return HTTPFound(request.url)

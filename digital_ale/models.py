@@ -115,6 +115,10 @@ class User(Base):
         return DBSession.query(cls).filter(cls.login_name == username).first()
 
     @classmethod
+    def get_all_usernames(cls):
+        return [row.login_name for row in DBSession.query(cls.login_name).order_by(cls.login_name).all()]
+
+    @classmethod
     def check_password(cls, username, password):
         user = cls.get_by_username(username)
         if not user:
@@ -190,6 +194,10 @@ class SheetEntry(Base):
         self.extraction_date = None
         self.data = initial_clean_up(self.replace_escape_sequences(data))
 
+        self.comment = ''
+
+    def set_data(self, data):
+        self.data = initial_clean_up(self.replace_escape_sequences(data))
         self.comment = ''
 
     def js_escaped_data(self):
@@ -445,7 +453,8 @@ class RootFactory(object):
         (Allow, Authenticated, 'post'),
         (Allow, 'role:editor', 'edit_sheet'),
         (Allow, 'role:editor', 'edit_place'),
-        (Allow, 'role:admin', 'bulk_extract')
+        (Allow, 'role:admin', 'bulk_extract'),
+        (Allow, 'role:admin', 'admin')
 
     ]
 

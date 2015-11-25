@@ -39,6 +39,7 @@ def main(global_config, **settings):
     config.include('pyramid_chameleon')
     config.add_static_view('static', 'static', cache_max_age=3600)
 
+    #HTML
     config.add_route('home', '/')
     config.add_route('register', '/register')
     config.add_route('login', '/login')
@@ -52,6 +53,12 @@ def main(global_config, **settings):
     config.add_route('sheet_prefix_data', '/s/{sheet_prefix}/data')
     config.add_route('sheet', 'q/{concept_id}/{scan_name}')
 
+    #Admin pages
+    config.add_route('admin_import_sheet', 'admin/import_sheet')
+    config.add_route('admin_users', 'admin/user')
+    config.add_route('admin_user_settings', 'admin/user/{user_id}')
+
+    #JSON endpoints
     config.add_route('place_candidates', '/api/place_candidates/{place_id}')
     config.add_route('place_get_all', '/api/place/all')
     config.add_route('place_get', '/api/place/{place_id}')
@@ -60,5 +67,6 @@ def main(global_config, **settings):
     config.add_route('place_candidate', '/api/place_candidate/{candidate_id}')
     config.add_route('sheet_edit', '/api/sheet/{concept_id}/{scan_name}/edit')
     config.add_route('extract_pronounciation', '/api/extract')
+
     config.scan()
     return config.make_wsgi_app()
