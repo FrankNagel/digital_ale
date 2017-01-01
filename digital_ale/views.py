@@ -11,6 +11,8 @@ from pyramid.response import Response
 
 from pyramid.view import view_config
 
+from sqlalchemy import text
+
 from sqlalchemy.exc import DBAPIError
 
 from .models import (
@@ -321,7 +323,7 @@ def place_get(request):
 
 @view_config(route_name='place_get_all', renderer='json', request_method='GET')
 def place_get_all(request):
-    places = DBSession.query(PlaceOfInquiry).filter('lat is not null').all()
+    places = DBSession.query(PlaceOfInquiry).filter(text('lat is not null')).all()
     wanted = set(['id', 'pointcode_old', 'pointcode_new', 'name', 'lat', 'lng', 'remarks', 'coordinates_validated'])
     response = [{key: place.__dict__[key] for key in place.__dict__.keys() if key in wanted} for place in places]
     return dict(status='OK', places=response)
