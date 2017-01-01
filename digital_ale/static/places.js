@@ -298,7 +298,7 @@ $(document).ready(function(){
         target: document.getElementById('map'),
         layers: [
             new ol.layer.Tile({
-                source: new ol.source.MapQuest({layer: 'osm'})
+                source: new ol.source.OSM()
             }),
             markers
         ],
